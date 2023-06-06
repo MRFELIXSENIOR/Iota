@@ -1,14 +1,14 @@
 [
 {
   "directory": "C:/Users/phamt/Documents/GitHub/Iota-Engine/debug",
-  "command": "C:\\PROGRA~1\\LLVM\\bin\\CLANG_~1.EXE -DIotaEngine_EXPORTS @CMakeFiles/IotaEngine.dir/includes_CXX.rsp -Wall -Wextra -Wno-unused-variable -g -std=gnu++20 -o CMakeFiles\\IotaEngine.dir\\src\\IotaApplication.cpp.obj -c C:\\Users\\phamt\\Documents\\GitHub\\Iota-Engine\\src\\IotaApplication.cpp",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -DIotaEngine_EXPORTS @CMakeFiles/IotaEngine.dir/includes_CXX.rsp -Wall -Wextra -Wno-unused-variable -std=gnu++23 -o CMakeFiles\\IotaEngine.dir\\src\\IotaApplication.cpp.obj -c C:\\Users\\phamt\\Documents\\GitHub\\Iota-Engine\\src\\IotaApplication.cpp",
   "file": "C:/Users/phamt/Documents/GitHub/Iota-Engine/src/IotaApplication.cpp",
   "output": "CMakeFiles/IotaEngine.dir/src/IotaApplication.cpp.obj"
 },
 {
   "directory": "C:/Users/phamt/Documents/GitHub/Iota-Engine/debug",
-  "command": "C:\\PROGRA~1\\LLVM\\bin\\CLANG_~1.EXE -DIotaEngine_EXPORTS @CMakeFiles/IotaEngine.dir/includes_CXX.rsp -Wall -Wextra -Wno-unused-variable -g -std=gnu++20 -o CMakeFiles\\IotaEngine.dir\\src\\main.cpp.obj -c C:\\Users\\phamt\\Documents\\GitHub\\Iota-Engine\\src\\main.cpp",
-  "file": "C:/Users/phamt/Documents/GitHub/Iota-Engine/src/main.cpp",
-  "output": "CMakeFiles/IotaEngine.dir/src/main.cpp.obj"
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -DIotaEngine_EXPORTS @CMakeFiles/IotaEngine.dir/includes_CXX.rsp -Wall -Wextra -Wno-unused-variable -std=gnu++23 -o CMakeFiles\\IotaEngine.dir\\src\\IotaEvent.cpp.obj -c C:\\Users\\phamt\\Documents\\GitHub\\Iota-Engine\\src\\IotaEvent.cpp",
+  "file": "C:/Users/phamt/Documents/GitHub/Iota-Engine/src/IotaEvent.cpp",
+  "output": "CMakeFiles/IotaEngine.dir/src/IotaEvent.cpp.obj"
 }
 ]
