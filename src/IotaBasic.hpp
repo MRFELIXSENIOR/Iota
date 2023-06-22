@@ -37,6 +37,7 @@ namespace IotaEngine {
 
 		bool Create(std::string_view window_title, int window_width,
 			int window_height);
+		void Destroy();
 	};
 
 	class Renderer {
@@ -47,12 +48,13 @@ namespace IotaEngine {
 
 	public:
 		Renderer();
-		Renderer(Window* win);
+		Renderer(Window& win);
 		~Renderer();
 
-		bool Create(Window* win);
+		bool Create(Window& win);
 		void Start();
 		void End();
+		void Destroy();
 
 		void SetDrawColor(Util::Color color);
 		void RenderTextureToScreen(Texture& texture);

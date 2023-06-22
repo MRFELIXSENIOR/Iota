@@ -3,26 +3,38 @@
 using namespace IotaEngine;
 using namespace GameInstance;
 
-Instance::Instance()
+InstanceCore::InstanceCore()
 	: changed(new Event::EventSignal<>),
 	child_added(new Event::EventSignal<Instance*>),
 	parent_changed(new Event::EventSignal<Instance*>),
 	destroying(new Event::EventSignal<>) {}
-Instance::Instance(std::string_view name)
+InstanceCore::InstanceCore(std::string_view name)
 	: changed(new Event::EventSignal<>),
 	child_added(new Event::EventSignal<Instance*>),
 	parent_changed(new Event::EventSignal<Instance*>),
 	destroying(new Event::EventSignal<>), name(name) {}
+InstanceCore::~InstanceCore() {}
+
+
+Instance::Instance() {}
 Instance::~Instance() {}
 
+void InstanceCore::FireVoidEvent(Event::EventSignal<>* event) {
+	event->Fire();
+}
+
+void InstanceCore::FireInstanceEvent(Event::EventSignal<Instance*>* event, Instance* inst) {
+	event->Fire(inst);
+}
+
 void Instance::Destroy() {
-	destroying->Fire();
+	core.FireVoidEvent(core.destroying);
 	for (Instance* inst : children) {
 		inst->Destroy();
 	}
 
 	SetParent(nullptr);
-	name = "";
+	core.name.empty();
 }
 
 std::vector<Instance*>& Instance::GetChildren() { return children; }
@@ -36,19 +48,32 @@ void Instance::ClearAllChildren() {
 
 Instance* Instance::FindFirstChild(std::string_view name) {
 	for (Instance* inst : children) {
-		if (inst->name == name)
+		if (inst->core.name == name)
 			return inst;
 	}
 	return nullptr;
 }
 
 void Instance::AddChildren(Instance* instance) {
-	child_added->Fire(this);
+	core.FireInstanceEvent(core.child_added, this);
 	children.push_back(instance);
 }
 
 void Instance::SetParent(Instance* instance) {
 	this->parent = instance;
-	parent_changed->Fire(instance);
+	core.FireInstanceEvent(core.parent_changed, this);
 	instance->AddChildren(this);
 }
+
+void Instance::Update() {}
+void Instance::Render() {}
+void Instance::Initialize() {}
+
+using namespace GameComponent;
+
+Component::Component() {}
+Component::~Component() {}
+
+void Component::Update() {}
+void Component::Render() {}
+void Component::Initialize() {}

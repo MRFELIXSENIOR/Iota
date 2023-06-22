@@ -14,11 +14,15 @@ namespace IotaEngine {
 
 	public:
 		Texture();
-		Texture(std::string_view path);
+		Texture(Renderer& r);
+		Texture(std::string_view path, Renderer& r);
 		~Texture();
 		SDL_Texture* data();
 
+		Texture LoadTexture(std::string_view path, Renderer& r);
 		Texture LoadTexture(std::string_view path);
+
+		void SetRenderer(Renderer& r);
 	};
 
 	class Canvas {

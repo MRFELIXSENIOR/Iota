@@ -8,8 +8,11 @@
 
 typedef unsigned int KeyType;
 
+union SDL_Event;
+
 namespace IotaEngine {
 	namespace GameInstance {
+		class InstanceCore;
 		class Instance;
 	}
 
@@ -19,9 +22,9 @@ namespace IotaEngine {
 		private:
 			using voidargs_function = void(Args...);
 			Nano::Signal<voidargs_function> main_signal;
-			friend class GameInstance::Instance;
 
-		protected:
+			friend class GameInstance::InstanceCore;
+
 			void Fire(Args... args) { main_signal.fire(args...); }
 
 		public:
@@ -67,7 +70,7 @@ namespace IotaEngine {
 			void DisconnectAll();
 		};
 
-		void PollEvent();
+		void PollEvent(SDL_Event& event);
 
 	}; // namespace Event
 }; // namespace IotaEngine

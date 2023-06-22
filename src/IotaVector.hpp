@@ -1,10 +1,12 @@
 #pragma once
 
+#include "IotaGameInstance.hpp"
+
 namespace IotaEngine {
 	namespace Vector {
 
 		template<typename T>
-		struct Vec2 final {
+		struct Vec2 : GameComponent::Component final {
 		public:
 			T x;
 			T y;

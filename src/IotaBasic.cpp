@@ -2,6 +2,7 @@
 #include "IotaTexture.hpp"
 #include "IotaApplication.hpp"
 #include "IotaException.hpp"
+
 #include "SDL.h"
 
 using namespace IotaEngine;
@@ -14,8 +15,8 @@ SDL_Color Util::Color::data() {
 }
 
 Renderer::Renderer() {}
-Renderer::Renderer(Window* win) {
-	renderer = SDL_CreateRenderer(win->window, -1, SDL_RENDERER_ACCELERATED);
+Renderer::Renderer(Window& win) {
+	renderer = SDL_CreateRenderer(win.window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
 		Application::ThrowRuntimeException(
 			"Failed To Create Renderer!",
@@ -27,8 +28,8 @@ Renderer::~Renderer() {
 	SDL_DestroyRenderer(renderer);
 }
 
-bool Renderer::Create(Window* win) {
-	renderer = SDL_CreateRenderer(win->window, -1, SDL_RENDERER_ACCELERATED);
+bool Renderer::Create(Window& win) {
+	renderer = SDL_CreateRenderer(win.window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
 		Application::ThrowRuntimeException(
 			"Failed To Create Renderer!",
@@ -52,6 +53,10 @@ void Renderer::SetDrawColor(Util::Color color) {
 
 void Renderer::RenderTextureToScreen(Texture& texture) {
 	SDL_RenderCopy(renderer, texture.data(), NULL, NULL);
+}
+
+void Renderer::Destroy() {
+	SDL_DestroyRenderer(renderer);
 }
 
 Window::Window() {}
@@ -83,6 +88,10 @@ bool Window::Create(std::string_view window_title, int window_width,
 		return false;
 	}
 	return true;
+}
+
+void Window::Destroy() {
+	SDL_DestroyWindow(window);
 }
 
 RenderSurface::RenderSurface() {}

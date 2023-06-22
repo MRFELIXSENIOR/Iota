@@ -45,16 +45,12 @@ KeyEvent::KeyEvent(KeyType key, KeyState key_state)
 	: key(key), key_state(key_state) {}
 KeyEvent::~KeyEvent() {}
 
-void Event::PollEvent() {
-	SDL_Event event;
-
-	while (SDL_PollEvent(&event)) {
+void Event::PollEvent(SDL_Event& event) {
+	while (SDL_PollEvent(&event) != 0) {
 		switch (event.type) {
 		case SDL_QUIT:
-			Application::CleanApplication();
+			Application::app_running = false;
 			break;
-		case SDL_KEYDOWN:
-			SDL_KeyboardEvent keyboardEvent = event.key;
 		}
 	}
 }

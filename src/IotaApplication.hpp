@@ -9,18 +9,15 @@ namespace IotaEngine {
 	class Window;
 
 	namespace Application {
-
 		using IotaMainFunction = void();
 
-		extern Renderer* app_renderer;
-		extern Window* app_window;
-
 		extern bool app_running;
+		extern bool app_initialized;
 
-		bool InitializeApplication(std::string_view window_title, int window_width,
-			int window_height);
-		void IotaMain(std::function<IotaMainFunction> main_function);
-		bool CleanApplication();
+		bool InitializeApplication(Renderer& renderer, Window& window);
+		void StartApplication();
+		void IotaMain(std::function<IotaMainFunction> main_function, Renderer& renderer, Window& window);
+		bool CleanApplication(Renderer& renderer, Window& window);
 
 		void ThrowRuntimeException(std::string_view error_title, RuntimeException::RuntimeException error_code,
 			std::string_view error_message);

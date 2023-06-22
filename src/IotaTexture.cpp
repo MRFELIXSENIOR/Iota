@@ -8,7 +8,8 @@
 using namespace IotaEngine;
 
 Texture::Texture() {}
-Texture::Texture(std::string_view path) {
+Texture::Texture(Renderer& r): renderer(&r) {}
+Texture::Texture(std::string_view path, Renderer& r): renderer(&r) {
 	SDL_Texture* result;
 
 	SDL_Surface* surface = IMG_Load(path.data());
@@ -28,5 +29,12 @@ Texture::Texture(std::string_view path) {
 	texture = result;
 }
 
-Texture Texture::LoadTexture(std::string_view path) { return Texture(path); }
+Texture::~Texture() {
+	SDL_DestroyTexture(texture);
+}
+
+Texture Texture::LoadTexture(std::string_view path) { return Texture(path, *renderer); }
+Texture Texture::LoadTexture(std::string_view path, Renderer& r) { return Texture(path, r); }
 SDL_Texture* Texture::data() { return texture; }
+
+void Texture::SetRenderer(Renderer& r) { renderer = &r; }

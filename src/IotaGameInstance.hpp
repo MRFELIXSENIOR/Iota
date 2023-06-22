@@ -37,6 +37,12 @@ namespace IotaEngine {
 			std::string name;
 
 		public:
+			Component();
+			virtual ~Component();
+
+			virtual void Update();
+			virtual void Render();
+			virtual void Initialize();
 		};
 
 		template <IsComponent T> struct GetComponentTypeID {
@@ -62,6 +68,25 @@ namespace IotaEngine {
 
 	namespace GameInstance {
 
+		class InstanceCore {
+		private:
+			friend class Instance;
+			std::string name;
+
+			Event::EventSignal<>* changed;
+			Event::EventSignal<Instance*>* child_added;
+			Event::EventSignal<Instance*>* parent_changed;
+			Event::EventSignal<>* destroying;
+
+			void FireVoidEvent(Event::EventSignal<>* event);
+			void FireInstanceEvent(Event::EventSignal<Instance*>* event, Instance* inst);
+
+		public:
+			InstanceCore();
+			InstanceCore(std::string_view name);
+			~InstanceCore();
+		};
+
 		class Instance {
 		private:
 			std::vector<Instance*> children;
@@ -71,17 +96,10 @@ namespace IotaEngine {
 			GameComponent::ComponentContainer component_container;
 			GameComponent::ComponentDynamicContainer dyn_component_container;
 
+			InstanceCore core;
+
 		public:
-			Event::EventSignal<>* changed;
-			Event::EventSignal<Instance*>* child_added;
-			Event::EventSignal<Instance*>* parent_changed;
-			Event::EventSignal<>* destroying;
-
-			std::string class_name;
-			std::string name;
-
 			Instance();
-			Instance(std::string_view name);
 			~Instance();
 
 			virtual void Destroy();
@@ -120,6 +138,10 @@ namespace IotaEngine {
 				else
 					return std::nullopt;
 			}
+
+			virtual void Update();
+			virtual void Render();
+			virtual void Initialize();
 		};
 
 	} // namespace GameInstance
