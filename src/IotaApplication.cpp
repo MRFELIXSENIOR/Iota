@@ -1,68 +1,111 @@
 #include "IotaApplication.hpp"
+#include "IotaBasic.hpp"
+#include "IotaEvent.hpp"
 
 #include <cstdlib>
 #include <iostream>
 
-#include "SDL2/SDL.h"
+#include "SDL.h"
+#include "SDL_image.h"
 
 using namespace IotaEngine;
-using namespace IotaApplication;
+using namespace Application;
 
-SDL_Renderer* IotaApplication::AppRenderer = nullptr;
-SDL_Window* IotaApplication::AppWindow = nullptr;
-bool IotaApplication::AppRunning = false;
+Renderer* Application::app_renderer = new Renderer;
+Window* Application::app_window = new Window;
+bool Application::app_running = false;
+static bool app_initialized = false;
 
-bool IotaApplication::StartApplication(std::string_view WindowTitle, int WindowWidth, int WindowHeight) {
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-        ThrowRuntimeException("Failed To Initialize", INITIALIZATION_FAILURE, SDL_GetError());
-        return false;
-    }
+bool Application::InitializeApplication(std::string_view window_title,
+	int window_width, int window_height) {
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+		ThrowRuntimeException("Failed To Initialize",
+			RuntimeException::INITIALIZATION_FAILURE,
+			SDL_GetError());
+		return false;
+	}
 
-    AppWindow = SDL_CreateWindow(WindowTitle.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowWidth, WindowHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN );
-    if (AppWindow == nullptr) {
-        SDL_Quit();
-        ThrowRuntimeException("Failed To Create Window!", WINDOW_CREATION_FAILURE, SDL_GetError());
-        return false;
-    }
+	app_window->Create(window_title, window_width, window_height);
+	app_renderer->Create(app_window);
 
-    AppRenderer = SDL_CreateRenderer(AppWindow, -1, SDL_RENDERER_ACCELERATED);
-    if (AppRenderer == nullptr) {
-        SDL_Quit();
-        ThrowRuntimeException("Failed To Create Renderer!", RENDERER_CREATION_FAILURE, SDL_GetError());
-        return false;
-    }
+	if (!(IMG_Init(IMG_INIT_PNG))) {
+		ThrowRuntimeException("Failed To Initialize Image Loader!",
+			RuntimeException::INITIALIZATION_FAILURE,
+			SDL_GetError());
+	}
 
-    AppRunning = true;
-    return true;
+	app_initialized = true;
+	return true;
 }
 
-bool IotaApplication::CleanApplication() {
-    if (AppRunning == false)
-        return false;
+bool Application::CleanApplication() {
+	if (app_running == false)
+		return false;
 
-    SDL_DestroyRenderer(AppRenderer);
-    SDL_DestroyWindow(AppWindow);
-    SDL_Quit();
-    return true;
+	delete app_renderer;
+	delete app_window;
+	IMG_Quit();
+	SDL_Quit();
+	app_running = false;
+	return true;
 }
 
-void IotaApplication::ThrowRuntimeException(std::string_view ErrorTitle, IotaException ErrorCode, std::string_view ErrorMessage) {
-    std::cout << "Runtime Exception Thrown!\nException Code: " << ErrorCode << "\nTitle: " << ErrorTitle << "\nMessage: " << ErrorMessage << '\n';
-    CleanApplication();
-    std::exit(ErrorCode);
-    __builtin_unreachable();
+void Application::IotaMain(std::function<IotaMainFunction> main_function) {
+	if (!app_initialized) {
+		ThrowRuntimeException("Application Not Initialized", Application::RuntimeException::NO_INIT_ERROR);
+		return;
+	}
+
+	while (app_running) {
+		app_renderer->Start();
+		Event::PollEvent();
+		main_function();
+		app_renderer->End();
+	}
+	CleanApplication();
 }
 
-void IotaApplication::ThrowRuntimeException(std::string_view ErrorTitle, IotaException ErrorCode) {
-    std::cout << "Runtime Exception Thrown!\nException Code: " << ErrorCode << "\nTitle: " << ErrorTitle << '\n';
-    CleanApplication();
-    std::exit(ErrorCode);
-    __builtin_unreachable();
+void Application::ThrowRuntimeException(
+	std::string_view error_title, RuntimeException::RuntimeException error_code,
+	std::string_view error_message) {
+	std::cerr << "Runtime Exception Thrown!\nException Code: " << error_code
+		<< "\nTitle: " << error_title << "\nMessage: " << error_message
+		<< '\n';
+	CleanApplication();
+	std::exit(error_code);
 }
 
-void IotaApplication::ThrowRuntimeException(IotaException ErrorCode) {
-    std::cout << "Runtime Exception Thrown!\nException Code: " << ErrorCode << '\n';
-    CleanApplication();
-    std::exit(ErrorCode);
-    __builtin_unreachable();
+void Application::ThrowRuntimeException(
+	std::string_view error_title,
+	RuntimeException::RuntimeException error_code) {
+	std::cerr << "Runtime Exception Thrown!\nException Code: " << error_code
+		<< "\nTitle: " << error_title << '\n';
+	CleanApplication();
+	std::exit(error_code);
+}
+
+void Application::ThrowRuntimeException(
+	RuntimeException::RuntimeException error_code) {
+	std::cerr << "Runtime Exception Thrown!\nException Code: " << error_code
+		<< '\n';
+	CleanApplication();
+	std::exit(error_code);
+}
+
+void Application::ThrowException(std::string_view error_title,
+	Exception::Exception error_code,
+	std::string_view error_message) {
+	std::cerr << "Exception Thrown!\nException Code: " << error_code
+		<< "\nTitle: " << error_title << "\nMessage: " << error_message
+		<< '\n';
+}
+
+void Application::ThrowException(std::string_view error_title,
+	Exception::Exception error_code) {
+	std::cerr << "Exception Thrown!\nException Code: " << error_code
+		<< "\nTitle: " << error_title << '\n';
+}
+
+void Application::ThrowException(Exception::Exception error_code) {
+	std::cerr << "Exception Thrown!\nException Code: " << error_code << '\n';
 }

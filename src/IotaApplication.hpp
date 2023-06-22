@@ -1,25 +1,35 @@
 #pragma once
 
-#include <string_view>
 #include "IotaException.hpp"
-
-struct SDL_Renderer;
-struct SDL_Window;
+#include <functional>
+#include <string>
 
 namespace IotaEngine {
-namespace IotaApplication {
+	class Renderer;
+	class Window;
 
-extern SDL_Renderer* AppRenderer;
-extern SDL_Window* AppWindow;
+	namespace Application {
 
-extern bool AppRunning;
+		using IotaMainFunction = void();
 
-bool StartApplication(std::string_view WindowTitle, int WindowWidth, int WindowHeight);
-bool CleanApplication();
+		extern Renderer* app_renderer;
+		extern Window* app_window;
 
-void ThrowRuntimeException(std::string_view ErrorTitle, IotaException ErrorCode, std::string_view ErrorMessage);
-void ThrowRuntimeException(std::string_view ErrorTitle, IotaException ErrorCode);
-void ThrowRuntimeException(IotaException ErrorCode);
+		extern bool app_running;
 
-};
-};
+		bool InitializeApplication(std::string_view window_title, int window_width,
+			int window_height);
+		void IotaMain(std::function<IotaMainFunction> main_function);
+		bool CleanApplication();
+
+		void ThrowRuntimeException(std::string_view error_title, RuntimeException::RuntimeException error_code,
+			std::string_view error_message);
+		void ThrowRuntimeException(std::string_view error_title, RuntimeException::RuntimeException error_code);
+		void ThrowRuntimeException(RuntimeException::RuntimeException error_code);
+
+		void ThrowException(std::string_view error_title, Exception::Exception error_code, std::string_view error_message);
+		void ThrowException(std::string_view error_title, Exception::Exception error_code);
+		void ThrowException(Exception::Exception error_code);
+
+	}; // namespace Application
+}; // namespace IotaEngine
