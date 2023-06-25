@@ -2,26 +2,17 @@
 
 namespace IotaEngine {
 	namespace Application {
-
-		namespace RuntimeException {
-
-			enum RuntimeException {
-				WINDOW_CREATION_FAILURE = 1,
-				RENDERER_CREATION_FAILURE = 2,
-				INITIALIZATION_FAILURE = 3,
-				NO_INIT_ERROR = 4,
-			};
-
+		enum class RuntimeException {
+			WINDOW_CREATION_FAILURE,
+			RENDERER_CREATION_FAILURE,
+			INITIALIZATION_FAILURE,
+			NO_INIT_ERROR,
 		};
 
-		namespace Exception {
-
-			enum Exception {
-				LOAD_PATH_FAILURE = 1,
-				CREATE_TEXTURE_FAILURE = 2,
-			};
-
+		enum class Exception {
+			CANNOT_FIND_CHILDREN,
+			LOAD_PATH_FAILURE,
+			CREATE_TEXTURE_FAILURE,
 		};
-
 	};
 };

@@ -1,7 +1,10 @@
 #pragma once
 
+#include "IotaTexture.hpp"
+
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 struct SDL_Color;
 struct SDL_Window;
@@ -10,16 +13,15 @@ struct SDL_Rect;
 struct SDL_Surface;
 
 namespace IotaEngine {
-	class Texture;
 	namespace Util {
 
-		SDL_Color& GetColor(uint8_t red, uint8_t green, uint8_t blue,
+		SDL_Color GetColor(uint8_t red, uint8_t green, uint8_t blue,
 			uint8_t alpha = 0xFF);
 		struct Color {
-			uint8_t r, g, b, a;
+			uint8_t red, green, blue, alpha;
 
 			Color();
-			Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 0xFF);
+			Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
 			SDL_Color data();
 		};
 
@@ -29,6 +31,7 @@ namespace IotaEngine {
 	private:
 		SDL_Window* window;
 		friend class Renderer;
+		friend class WindowManager;
 
 	public:
 		Window();
@@ -44,7 +47,7 @@ namespace IotaEngine {
 	private:
 		SDL_Renderer* renderer;
 		friend class Window;
-		friend class Texture;
+		friend class Texture; 
 
 	public:
 		Renderer();
@@ -60,16 +63,30 @@ namespace IotaEngine {
 		void RenderTextureToScreen(Texture& texture);
 	};
 
-	class RenderSurface {
+	class WindowManager {
 	private:
-		SDL_Rect* rect;
-		SDL_Surface* surface;
+		using WindowContainer = std::vector<Window*>;
+		using RendererContainer = std::vector<Renderer*>;
+		friend class Window;
+		friend class Renderer;
+		WindowContainer windows;
+		RendererContainer renderers;
 
 	public:
-		RenderSurface();
-		~RenderSurface();
+		WindowManager();
+		~WindowManager();
 
-		//void RenderTexture(Texture& texture);
+		void RemoveWindow(Window* win);
+		void RemoveRenderer(Renderer* rdrer);
+
+		void AddWindow(Window* win);
+		void AddRenderer(Renderer* rdrer);
+
+		void Clean();
 	};
 
+	namespace Application {
+		void BasicClean();
+		void Clean(Window& win, Renderer& rdrer);
+	};
 } // namespace IotaEngine

@@ -17,23 +17,18 @@ namespace IotaEngine {
 	}
 
 	namespace Event {
-
 		template <typename... Args> class EventSignal {
 		private:
-			using voidargs_function = void(Args...);
-			Nano::Signal<voidargs_function> main_signal;
-
-			friend class GameInstance::InstanceCore;
-
-			void Fire(Args... args) { main_signal.fire(args...); }
+			Nano::Signal<void(Args...)> main_signal;
 
 		public:
 			EventSignal() {}
 			~EventSignal() {}
-			void Connect(std::function<voidargs_function> fn) {
+			void Connect(std::function<void(Args...)> fn) {
 				main_signal.connect(fn);
 			}
 			void Disconnect() { main_signal.disconnect_all(); }
+			void Fire(Args... args) { main_signal.fire(args...); }
 		};
 
 		enum KeyState {
@@ -59,6 +54,7 @@ namespace IotaEngine {
 
 		class KeyListener {
 			std::vector<KeyEvent*> registered_events;
+			friend class KeyEvent;
 
 		public:
 			~KeyListener();
@@ -70,7 +66,7 @@ namespace IotaEngine {
 			void DisconnectAll();
 		};
 
-		void PollEvent(SDL_Event& event);
+		void PollEvent();
 
 	}; // namespace Event
 }; // namespace IotaEngine

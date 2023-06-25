@@ -11,6 +11,7 @@ using namespace Event;
 KeyListener::KeyListener() noexcept {}
 KeyListener::KeyListener(std::initializer_list<KeyEvent*> event_list)
 	: registered_events(event_list) {}
+KeyListener::~KeyListener() {}
 
 bool KeyListener::AddEvent(KeyEvent* event) {
 	for (KeyEvent* keyev : registered_events) {
@@ -45,11 +46,12 @@ KeyEvent::KeyEvent(KeyType key, KeyState key_state)
 	: key(key), key_state(key_state) {}
 KeyEvent::~KeyEvent() {}
 
-void Event::PollEvent(SDL_Event& event) {
+void Event::PollEvent() {
+	SDL_Event event;
 	while (SDL_PollEvent(&event) != 0) {
 		switch (event.type) {
 		case SDL_QUIT:
-			Application::app_running = false;
+			Application::Clean();
 			break;
 		}
 	}

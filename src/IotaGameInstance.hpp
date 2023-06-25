@@ -2,141 +2,69 @@
 
 #include "IotaEvent.hpp"
 #include "IotaVector.hpp"
+#include "IotaApplication.hpp"
 
-#include <array>
-#include <bitset>
-#include <map>
 #include <memory>
 #include <optional>
 #include <string>
-#include <type_traits>
-#include <vector>
+#include <typeinfo>
+#include <map>
+#include <iostream>
+#include <format>
 
 namespace IotaEngine {
-	namespace GameComponent {
-
-		class Component;
-
-#define MAX_COMPONENT_SIZE 32
-#define SAME_COMPONENT_TYPE -1
-
-		typedef int ComponentID;
-		using ComponentBitset = std::bitset<MAX_COMPONENT_SIZE>;
-		using ComponentContainer = std::array<Component*, MAX_COMPONENT_SIZE>;
-		using ComponentDynamicContainer = std::vector<std::unique_ptr<Component>>;
-
-		template <typename T>
-		concept IsComponent = std::is_base_of_v<Component, T>;
-
-		class Component {
-		private:
-			friend class GameInstance::Instance;
-			GameInstance::Instance* component_owner;
-			ComponentID id;
-			bool owned;
-			std::string name;
-
-		public:
-			Component();
-			virtual ~Component();
-
-			virtual void Update();
-			virtual void Render();
-			virtual void Initialize();
-		};
-
-		template <IsComponent T> struct GetComponentTypeID {
-			static std::map<ComponentID, const std::type_info*> given_type;
-
-			static const ComponentID value = []() {
-				for (auto& t : given_type) {
-					if (typeid(T) == *t.second)
-						return t.first;
-				}
-
-				static ComponentID id = 0;
-				given_type.insert(std::make_pair(id++, &typeid(T)));
-				return id;
-			}();
-		};
-
-		template <typename T>
-		static inline constexpr ComponentID get_component_typeid_v =
-			GetComponentTypeID<std::remove_cv_t<std::remove_reference_t<T>>>::value;
-
-	} // namespace GameComponent
-
 	namespace GameInstance {
-
-		class InstanceCore {
-		private:
-			friend class Instance;
-			std::string name;
-
-			Event::EventSignal<>* changed;
-			Event::EventSignal<Instance*>* child_added;
-			Event::EventSignal<Instance*>* parent_changed;
-			Event::EventSignal<>* destroying;
-
-			void FireVoidEvent(Event::EventSignal<>* event);
-			void FireInstanceEvent(Event::EventSignal<Instance*>* event, Instance* inst);
-
-		public:
-			InstanceCore();
-			InstanceCore(std::string_view name);
-			~InstanceCore();
-		};
+		template <typename T>
+		concept IsInstance = std::is_base_of_v<Instance, T>;
 
 		class Instance {
 		private:
 			std::vector<Instance*> children;
 			Instance* parent;
 
-			GameComponent::ComponentBitset component_bitset;
-			GameComponent::ComponentContainer component_container;
-			GameComponent::ComponentDynamicContainer dyn_component_container;
-
-			InstanceCore core;
-
 		public:
+			std::string name;
+
 			Instance();
 			~Instance();
 
+			Event::EventSignal<> changed;
+			Event::EventSignal<Instance*> child_added;
+			Event::EventSignal<Instance*> parent_changed;
+			Event::EventSignal<> destroying;
+
 			virtual void Destroy();
-			virtual std::vector<Instance*>& GetChildren();
-			virtual void ClearAllChildren();
-			Instance* FindFirstChild(std::string_view name);
+			std::vector<Instance*> GetChildren();
+			void ClearAllChildren();
 
-			void AddChildren(Instance* instance);
-			void SetParent(Instance* instance);
+			template <IsInstance T>
+			std::optional<T*> AddChildren(T* inst) {
+				if (static_cast<std::remove_pointer_t<decltype(this)>>(inst) = this) return std::nullopt;
+				
+				inst.SetParent(this);
+				children.push_back(inst);
+				child_added.Fire(inst);
 
-			template <GameComponent::IsComponent T, typename... Args>
-			std::optional<T> AddComponent(Args... args) {
-				if (GameComponent::get_component_typeid_v<T> <=
-					component_container[component_container.size() - 1]->id)
-					return std::nullopt;
-				T* component = new T(args...);
-				component->component_owner = this;
-				component->owned = true;
-				component->id = GameComponent::get_component_typeid_v<T>;
-				std::unique_ptr<GameComponent::Component> cmp_ptr = component;
-
-				dyn_component_container.push_back(std::move(cmp_ptr));
-				component_bitset[GameComponent::get_component_typeid_v<T>] = true;
-				component_container[GameComponent::get_component_typeid_v<T>] =
-					static_cast<GameComponent::Component*>(component);
-
-				return *component;
+				return inst;
 			}
 
-			template <GameComponent::IsComponent T> std::optional<T> GetComponent() {
-				if (component_bitset[GameComponent::get_component_typeid_v<T>] ==
-					true) {
-					return *dynamic_cast<T>(
-						component_container[GameComponent::get_component_typeid_v<T>]);
+			template <IsInstance T>
+			std::optional<T*> GetChild(std::string_view child_name) {
+				for (Instance* inst : children) {
+					if (inst->name == child_name) {
+						return dynamic_cast<T*>(inst);
+					}
 				}
-				else
-					return std::nullopt;
+
+				Application::ThrowException(std::format("Cannot Find {} in {}", child_name, name), Application::Exception::CANNOT_FIND_CHILDREN);
+				return std::nullopt;
+			}
+
+			template <IsInstance T>
+			void SetParent(T* inst) { 
+				if (static_cast<std::remove_pointer_t<decltype(this)>>(inst) == this) return;
+				parent = &inst;
+				parent_changed.Fire(inst);
 			}
 
 			virtual void Update();

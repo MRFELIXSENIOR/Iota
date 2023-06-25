@@ -1,6 +1,8 @@
 #pragma once
 
 #include "IotaException.hpp"
+#include "IotaBasic.hpp"
+
 #include <functional>
 #include <string>
 
@@ -9,24 +11,31 @@ namespace IotaEngine {
 	class Window;
 
 	namespace Application {
-		using IotaMainFunction = void();
+		using IotaMainFunction = std::function<void()>;
 
-		extern bool app_running;
-		extern bool app_initialized;
+		bool Initialize();
+		bool Initialize(Window& window, Renderer& renderer);
+		bool Initialize(std::string_view window_title, int window_width, int window_height);
 
-		bool InitializeApplication(Renderer& renderer, Window& window);
-		void StartApplication();
-		void IotaMain(std::function<IotaMainFunction> main_function, Renderer& renderer, Window& window);
-		bool CleanApplication(Renderer& renderer, Window& window);
+		void Start();
+		void IotaMain(IotaMainFunction main_function, Window& window, Renderer& renderer);
+		void IotaMain(IotaMainFunction main_function);
 
-		void ThrowRuntimeException(std::string_view error_title, RuntimeException::RuntimeException error_code,
+		Window& GetWindow();
+		Renderer& GetRenderer();
+
+		bool Clean();
+
+		bool IsRunning();
+
+		void ThrowRuntimeException(std::string_view error_title, RuntimeException error_code,
 			std::string_view error_message);
-		void ThrowRuntimeException(std::string_view error_title, RuntimeException::RuntimeException error_code);
-		void ThrowRuntimeException(RuntimeException::RuntimeException error_code);
+		void ThrowRuntimeException(std::string_view error_title, RuntimeException error_code);
+		void ThrowRuntimeException(RuntimeException error_code);
 
-		void ThrowException(std::string_view error_title, Exception::Exception error_code, std::string_view error_message);
-		void ThrowException(std::string_view error_title, Exception::Exception error_code);
-		void ThrowException(Exception::Exception error_code);
+		void ThrowException(std::string_view error_title, Exception error_code, std::string_view error_message);
+		void ThrowException(std::string_view error_title, Exception error_code);
+		void ThrowException(Exception error_code);
 
 	}; // namespace Application
 }; // namespace IotaEngine

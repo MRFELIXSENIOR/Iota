@@ -2,12 +2,15 @@
 
 #include "IotaGameInstance.hpp"
 
+#include <iostream>
+
 namespace IotaEngine {
 	namespace Vector {
-
 		template<typename T>
-		struct Vec2 : GameComponent::Component final {
-		public:
+		concept IsArithmetic = std::is_arithmetic_v<T>;
+
+		template<IsArithmetic T>
+		struct Vec2 final {
 			T x;
 			T y;
 
@@ -25,7 +28,13 @@ namespace IotaEngine {
 			constexpr Vec2<T>& operator-=(const T& s) noexcept { x -= s;  y -= s; return *this; }
 			constexpr Vec2<T>& operator*=(const T& s) noexcept { x *= s;  y *= s; return *this; }
 			constexpr Vec2<T>& operator/=(const T& s) { x /= s;  y /= s; return *this; }
-		};
 
+			std::ostream& operator<<(std::ostream& c) {
+				c << '[' << x << ", " << y << ']';
+				return c;
+			}
+
+			T Magnitude() { return std::sqrt(x * x + y * y); }
+		};
 	};
 };
