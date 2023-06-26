@@ -10,6 +10,7 @@ namespace IotaEngine {
 		};
 
 		enum class Exception {
+			CANNOT_LOG,
 			CANNOT_FIND_CHILDREN,
 			LOAD_PATH_FAILURE,
 			CREATE_TEXTURE_FAILURE,

@@ -4,6 +4,9 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <ostream>
+#include <sstream>
+#include <fstream>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -12,6 +15,7 @@ using namespace IotaEngine;
 using namespace Application;
 
 static Application::IotaMainFunction main_fn;
+
 static Window* global_window = nullptr;
 static Renderer* global_renderer = nullptr;
 
@@ -20,6 +24,15 @@ static Renderer app_renderer;
 
 static bool app_running = false;
 static bool app_initialized = false;
+
+static Console::ConsoleStatus app_console_stream = Console::ConsoleStatus::STDOUT;
+
+static std::stringstream console_buffer;
+
+static std::streambuf* buf;
+static std::streambuf* errbuf;
+
+static bool console_logged = false;
 
 bool Application::Initialize() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -64,7 +77,7 @@ bool Application::Clean() {
 
 bool Application::IsRunning() { return app_running; }
 
-void Application::IotaMain(IotaMainFunction main_function, Window& window, Renderer& renderer) {
+void Application::Main(IotaMainFunction main_function, Window& window, Renderer& renderer) {
 	if (app_initialized == false) {
 		ThrowRuntimeException("Application Not Initialized", Application::RuntimeException::NO_INIT_ERROR);
 		return;
@@ -75,22 +88,51 @@ void Application::IotaMain(IotaMainFunction main_function, Window& window, Rende
 	main_fn = main_function;
 }
 
+void Application::Main(IotaMainFunction main_function) {
+	Main(main_function, app_window, app_renderer);
+}
+
 void Application::Start() {
 	app_running = true;
+	Console::SwitchStream();
 	while (app_running == true) {
 		global_renderer->Start();
 		Event::PollEvent();
 		main_fn();
+		if (console_logged == false) {
+			std::ofstream file("console_output.log");
+
+			file << console_buffer.rdbuf();
+			file.close();
+			Console::SwitchStream();
+			std::cout << console_buffer.str() << '\n';
+			console_logged = true;
+			std::cout.rdbuf(nullptr);
+			std::cerr.rdbuf(nullptr);
+		}
 		global_renderer->End();
 	}
 }
 
-void Application::IotaMain(IotaMainFunction main_function) {
-	IotaMain(main_function, app_window, app_renderer);
-}
-
 Window& Application::GetWindow() { return app_window; }
 Renderer& Application::GetRenderer() { return app_renderer; }
+
+Console::ConsoleStatus Console::SwitchStream() {
+	switch (app_console_stream) {
+	case ConsoleStatus::STDOUT:
+		buf = std::cout.rdbuf(console_buffer.rdbuf());
+		errbuf = std::cerr.rdbuf(console_buffer.rdbuf());
+		app_console_stream = ConsoleStatus::CONSOLE;
+		return ConsoleStatus::CONSOLE;
+	case ConsoleStatus::CONSOLE:
+		std::cout.rdbuf(buf);
+		std::cerr.rdbuf(errbuf);
+		app_console_stream = ConsoleStatus::STDOUT;
+		return ConsoleStatus::STDOUT;
+	}
+}
+
+Console::ConsoleStatus Console::GetStatus() { return app_console_stream; }
 
 #define index(v) static_cast<int>(v)
 
@@ -99,7 +141,7 @@ void Application::ThrowRuntimeException(
 	std::string_view error_message) {
 	std::cerr << "[RUNTIME EXCEPTION THROWN!]\nException Code: " << index(error_code)
 		<< "\nTitle: " << error_title << "\nMessage: " << error_message
-		<< '\n';
+		<< '\n' << "[END RUNTIME EXCEPTION]\n";
 	Clean();
 	std::exit(index(error_code));
 }
@@ -108,7 +150,7 @@ void Application::ThrowRuntimeException(
 	std::string_view error_title,
 	RuntimeException error_code) {
 	std::cerr << "[RUNTIME EXCEPTION THROWN!]\nException Code: " << index(error_code)
-		<< "\nTitle: " << error_title << '\n';
+		<< "\nTitle: " << error_title << '\n' << "[END RUNTIME EXCEPTION]\n";
 	Clean();
 	std::exit(index(error_code));
 }
@@ -116,7 +158,7 @@ void Application::ThrowRuntimeException(
 void Application::ThrowRuntimeException(
 	RuntimeException error_code) {
 	std::cerr << "[RUNTIME EXCEPTION THROWN!]\nException Code: " << index(error_code)
-		<< '\n';
+		<< '\n' << "[END RUNTIME EXCEPTION]\n";
 	Clean();
 	std::exit(index(error_code));
 }
@@ -126,15 +168,15 @@ void Application::ThrowException(std::string_view error_title,
 	std::string_view error_message) {
 	std::cerr << "[Exception Thrown!]\nException Code: " << index(error_code)
 		<< "\nTitle: " << error_title << "\nMessage: " << error_message
-		<< '\n';
+		<< '\n' << "[End Exception]\n";
 }
 
 void Application::ThrowException(std::string_view error_title,
 	Exception error_code) {
 	std::cerr << "[Exception Thrown!]\nException Code: " << index(error_code)
-		<< "\nTitle: " << error_title << '\n';
+		<< "\nTitle: " << error_title << '\n' << "[End Exception]\n";
 }
 
 void Application::ThrowException(Exception error_code) {
-	std::cerr << "[Exception Thrown!]\nException Code: " << index(error_code) << '\n';
+	std::cerr << "[Exception Thrown!]\nException Code: " << index(error_code) << '\n' << "[End Exception]\n";
 }

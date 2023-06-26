@@ -22,6 +22,10 @@ namespace IotaEngine {
 			std::vector<Instance*> children;
 			Instance* parent;
 
+			virtual void Update();
+			virtual void Render();
+			virtual void Initialize();
+
 		public:
 			std::string name;
 
@@ -39,9 +43,9 @@ namespace IotaEngine {
 
 			template <IsInstance T>
 			std::optional<T*> AddChildren(T* inst) {
-				if (static_cast<std::remove_pointer_t<decltype(this)>>(inst) = this) return std::nullopt;
+				if (this == static_cast<decltype(this)>(inst)) return std::nullopt;
 				
-				inst.SetParent(this);
+				inst->SetParent(this);
 				children.push_back(inst);
 				child_added.Fire(inst);
 
@@ -62,15 +66,10 @@ namespace IotaEngine {
 
 			template <IsInstance T>
 			void SetParent(T* inst) { 
-				if (static_cast<std::remove_pointer_t<decltype(this)>>(inst) == this) return;
-				parent = &inst;
+				if (static_cast<decltype(this)>(inst) == this) return;
+				parent = inst;
 				parent_changed.Fire(inst);
-			}
-
-			virtual void Update();
-			virtual void Render();
-			virtual void Initialize();
+			}		
 		};
-
 	} // namespace GameInstance
 } // namespace IotaEngine

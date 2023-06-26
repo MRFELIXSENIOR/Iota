@@ -5,6 +5,11 @@
 
 #include <functional>
 #include <string>
+#include <iostream>
+#include <format>
+#include <typeinfo>
+#include <type_traits>
+#include <stdexcept>
 
 namespace IotaEngine {
 	class Renderer;
@@ -18,8 +23,8 @@ namespace IotaEngine {
 		bool Initialize(std::string_view window_title, int window_width, int window_height);
 
 		void Start();
-		void IotaMain(IotaMainFunction main_function, Window& window, Renderer& renderer);
-		void IotaMain(IotaMainFunction main_function);
+		void Main(IotaMainFunction main_function, Window& window, Renderer& renderer);
+		void Main(IotaMainFunction main_function);
 
 		Window& GetWindow();
 		Renderer& GetRenderer();
@@ -38,4 +43,25 @@ namespace IotaEngine {
 		void ThrowException(Exception error_code);
 
 	}; // namespace Application
+
+	namespace Console {
+		enum class ConsoleStatus {
+			CONSOLE = true,
+			STDOUT = false,
+		};
+
+		ConsoleStatus SwitchStream();
+		ConsoleStatus GetStatus();
+
+		template <typename T>
+		void Log(T value) {
+			try {
+				std::cout << value << '\n';
+			}
+			catch (const std::exception& e) {
+				Application::ThrowException(std::format("Unable to Log Value of Type: {}", typeid(T).name()), Application::Exception::CANNOT_LOG, e.what());
+			}
+		}
+	};
+
 }; // namespace IotaEngine

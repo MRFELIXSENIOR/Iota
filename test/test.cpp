@@ -4,15 +4,19 @@
 #include <string>
 
 using namespace IotaEngine;
-long long i = 0;
+
+void connect(GameInstance::Instance* c) {
+	std::cout << "Child Added!, child: " << c->name << '\n';
+}
 
 int main() {
 	Application::Initialize("funny", 1024, 768);
-	Application::IotaMain([]() {
+	Application::Main([]() {
 		Texture texture;
 		texture.LoadTexture("C:\\Users\\phamt\\Desktop\\funny.png");
 		Application::GetRenderer().RenderTextureToScreen(texture);
-		std::cout << i++ << '\n'; 
+		Console::Log("This Is A Log Message!");
+		Console::Log("Yay a new feature to IotaEngine!!!");
 		});
 	Application::Start();
 	return 0;

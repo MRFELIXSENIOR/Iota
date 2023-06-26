@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NanoSignalSlot/nano_signal_slot.hpp"
+#include "sigslot/signal.hpp"
 #include <concepts>
 #include <functional>
 #include <initializer_list>
@@ -18,17 +18,19 @@ namespace IotaEngine {
 
 	namespace Event {
 		template <typename... Args> class EventSignal {
+			using OnSignalCallback = std::function<void(Args...)>;
 		private:
-			Nano::Signal<void(Args...)> main_signal;
+			sigslot::signal<Args...> signal;
 
 		public:
 			EventSignal() {}
 			~EventSignal() {}
-			void Connect(std::function<void(Args...)> fn) {
-				main_signal.connect(fn);
+			void Connect(OnSignalCallback fn) {
+				signal.connect(fn);
 			}
-			void Disconnect() { main_signal.disconnect_all(); }
-			void Fire(Args... args) { main_signal.fire(args...); }
+
+			void Disconnect() { signal.disconnect_all(); }
+			void Fire(Args... args) { signal(args...); }
 		};
 
 		enum KeyState {
