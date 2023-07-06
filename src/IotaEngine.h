@@ -1,11 +1,10 @@
-#ifndef __IOTA_ENGINE_H__
-#define __IOTA_ENGINE_H__
+#pragma once
 
-#include "IotaApplication.hpp"
-#include "IotaBasic.hpp"
-#include "IotaEvent.hpp"
-#include "IotaGameInstance.hpp"
-#include "IotaTexture.hpp"
-#include "IotaVector.hpp"
-
-#endif
+#include "game/IotaApplication.hpp"
+#include "game/IotaGameInstance.hpp"
+#include "game/IotaTexture.hpp"
+#include "common/IotaVector.hpp"
+#include "common/IotaException.hpp"
+#include "common/IotaBasic.hpp"
+#include "common/IotaEvent.hpp"
+#include "lua/IotaScriptEnvironment.hpp"

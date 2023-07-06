@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IotaTexture.hpp"
+#include "game/IotaTexture.hpp"
 
 #include <stdint.h>
 #include <string>
@@ -13,19 +13,17 @@ struct SDL_Rect;
 struct SDL_Surface;
 
 namespace IotaEngine {
-	namespace Util {
 
-		SDL_Color GetColor(uint8_t red, uint8_t green, uint8_t blue,
-			uint8_t alpha = 0xFF);
-		struct Color {
-			uint8_t red, green, blue, alpha;
+	SDL_Color GetColor(uint8_t red, uint8_t green, uint8_t blue,
+		uint8_t alpha = 0xFF);
+	struct Color {
+		uint8_t red, green, blue, alpha;
 
-			Color();
-			Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
-			SDL_Color data();
-		};
+		Color();
+		Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF);
+		SDL_Color data();
+	};
 
-	} // namespace Util
 
 	class Window {
 	private:
@@ -47,7 +45,7 @@ namespace IotaEngine {
 	private:
 		SDL_Renderer* renderer;
 		friend class Window;
-		friend class Texture; 
+		friend class Texture;
 
 	public:
 		Renderer();
@@ -59,7 +57,7 @@ namespace IotaEngine {
 		void End();
 		void Destroy();
 
-		void SetDrawColor(Util::Color color);
+		void SetDrawColor(Color color);
 		void RenderTextureToScreen(Texture& texture);
 	};
 

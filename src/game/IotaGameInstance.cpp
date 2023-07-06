@@ -1,13 +1,12 @@
 #include "IotaGameInstance.hpp"
 #include "IotaApplication.hpp"
 
-#include <format>
-#include <iostream>
-
 using namespace IotaEngine;
 using namespace GameInstance;
 
-Instance::Instance() {}
+using namespace InstanceProperty;
+
+Instance::Instance(): parent(nullptr) {}
 Instance::~Instance() {
 	Destroy();
 }
@@ -26,7 +25,3 @@ void Instance::ClearAllChildren() {
 	}
 	children.clear();
 }
-
-void Instance::Update() {}
-void Instance::Render() {}
-void Instance::Initialize() {}

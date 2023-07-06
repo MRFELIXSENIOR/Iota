@@ -1,30 +1,19 @@
 #pragma once
 
-#include "IotaException.hpp"
-#include "IotaBasic.hpp"
+#include "common/IotaException.hpp"
+#include "common/IotaBasic.hpp"
+#include "lua/IotaScriptEnvironment.hpp"
 
 #include <functional>
 #include <string>
 #include <iostream>
-#include <format>
-#include <typeinfo>
-#include <type_traits>
-#include <stdexcept>
 
 namespace IotaEngine {
-	class Renderer;
-	class Window;
-
 	namespace Application {
 		using IotaMainFunction = std::function<void()>;
 
-		bool Initialize();
-		bool Initialize(Window& window, Renderer& renderer);
 		bool Initialize(std::string_view window_title, int window_width, int window_height);
-
-		void Start();
-		void Main(IotaMainFunction main_function, Window& window, Renderer& renderer);
-		void Main(IotaMainFunction main_function);
+		void Start(Lua::Script& script);
 
 		Window& GetWindow();
 		Renderer& GetRenderer();
@@ -42,26 +31,7 @@ namespace IotaEngine {
 		void ThrowException(std::string_view error_title, Exception error_code);
 		void ThrowException(Exception error_code);
 
+		void SetFrameLimit(unsigned int target);
+		void test() { std::cout << "hi\n"; }
 	}; // namespace Application
-
-	namespace Console {
-		enum class ConsoleStatus {
-			CONSOLE = true,
-			STDOUT = false,
-		};
-
-		ConsoleStatus SwitchStream();
-		ConsoleStatus GetStatus();
-
-		template <typename T>
-		void Log(T value) {
-			try {
-				std::cout << value << '\n';
-			}
-			catch (const std::exception& e) {
-				Application::ThrowException(std::format("Unable to Log Value of Type: {}", typeid(T).name()), Application::Exception::CANNOT_LOG, e.what());
-			}
-		}
-	};
-
 }; // namespace IotaEngine

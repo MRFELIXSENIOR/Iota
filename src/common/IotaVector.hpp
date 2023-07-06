@@ -1,7 +1,5 @@
 #pragma once
 
-#include "IotaGameInstance.hpp"
-
 #include <iostream>
 
 namespace IotaEngine {

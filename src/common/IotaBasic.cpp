@@ -1,7 +1,7 @@
 #include "IotaBasic.hpp"
-#include "IotaTexture.hpp"
-#include "IotaApplication.hpp"
 #include "IotaException.hpp"
+#include "game/IotaTexture.hpp"
+#include "game/IotaApplication.hpp"
 
 #include "SDL.h"
 
@@ -9,14 +9,14 @@ using namespace IotaEngine;
 
 static WindowManager window_manager;
 
-Util::Color::Color() {}
-Util::Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : red(r), green(g), blue(b), alpha() {}
-SDL_Color Util::Color::data() {
+Color::Color(): red(0), green(0), blue(0), alpha(0) {}
+Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : red(r), green(g), blue(b), alpha() {}
+SDL_Color Color::data() {
 	SDL_Color c = { red, green, blue, alpha };
 	return c;
 }
 
-SDL_Color Util::GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
+SDL_Color IotaEngine::GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
 	return { red, green, blue, alpha };
 }
 
@@ -58,7 +58,7 @@ bool Renderer::Create(Window& win) {
 void Renderer::Start() { SDL_RenderClear(renderer); }
 void Renderer::End() { SDL_RenderPresent(renderer); }
 
-void Renderer::SetDrawColor(Util::Color color) { SDL_SetRenderDrawColor(renderer, color.red, color.green, color.blue, color.alpha); }
+void Renderer::SetDrawColor(Color color) { SDL_SetRenderDrawColor(renderer, color.red, color.green, color.blue, color.alpha); }
 void Renderer::RenderTextureToScreen(Texture& texture) { SDL_RenderCopy(renderer, texture.data(), NULL, NULL); }
 void Renderer::Destroy() {
 	window_manager.RemoveRenderer(this);

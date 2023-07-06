@@ -1,12 +1,11 @@
-#include "IotaApplication.hpp"
-#include "IotaBasic.hpp"
-#include "IotaEvent.hpp"
+#include "game/IotaApplication.hpp"
+#include "common/IotaBasic.hpp"
+#include "common/IotaEvent.hpp"
 
 #include <cstdlib>
 #include <iostream>
-#include <ostream>
-#include <sstream>
-#include <fstream>
+#include <thread>
+#include <mutex>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -14,27 +13,17 @@
 using namespace IotaEngine;
 using namespace Application;
 
-static Application::IotaMainFunction main_fn;
-
-static Window* global_window = nullptr;
-static Renderer* global_renderer = nullptr;
-
 static Window app_window;
 static Renderer app_renderer;
 
 static bool app_running = false;
 static bool app_initialized = false;
 
-static Console::ConsoleStatus app_console_stream = Console::ConsoleStatus::STDOUT;
+static int app_framelimit = 60;
 
-static std::stringstream console_buffer;
+static bool run_script = false;
 
-static std::streambuf* buf;
-static std::streambuf* errbuf;
-
-static bool console_logged = false;
-
-bool Application::Initialize() {
+bool Application::Initialize(std::string_view window_title, int window_width, int window_height) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		ThrowRuntimeException("Failed To Initialize",
 			RuntimeException::INITIALIZATION_FAILURE,
@@ -49,19 +38,11 @@ bool Application::Initialize() {
 	}
 
 	app_initialized = true;
-	return true;
-}
-
-bool Application::Initialize(Window& window, Renderer& renderer) {
-	global_window = &window;
-	global_renderer = &renderer;
-	return Initialize();
-}
-
-bool Application::Initialize(std::string_view window_title, int window_width, int window_height) {
 	app_window.Create(window_title, window_width, window_height);
 	app_renderer.Create(app_window);
-	return Initialize();
+	Lua::LoadSTD();
+
+	return true;
 }
 
 bool Application::Clean() {
@@ -77,62 +58,43 @@ bool Application::Clean() {
 
 bool Application::IsRunning() { return app_running; }
 
-void Application::Main(IotaMainFunction main_function, Window& window, Renderer& renderer) {
+void Application::Start(Lua::Script& main_script) {
 	if (app_initialized == false) {
 		ThrowRuntimeException("Application Not Initialized", Application::RuntimeException::NO_INIT_ERROR);
 		return;
 	}
 
-	global_window = &window;
-	global_renderer = &renderer;
-	main_fn = main_function;
-}
-
-void Application::Main(IotaMainFunction main_function) {
-	Main(main_function, app_window, app_renderer);
-}
-
-void Application::Start() {
 	app_running = true;
-	Console::SwitchStream();
+	Uint32 framestart;
+	float frametime;
 	while (app_running == true) {
-		global_renderer->Start();
-		Event::PollEvent();
-		main_fn();
-		if (console_logged == false) {
-			std::ofstream file("console_output.log");
+		framestart = SDL_GetTicks();
 
-			file << console_buffer.rdbuf();
-			file.close();
-			Console::SwitchStream();
-			std::cout << console_buffer.str() << '\n';
-			console_logged = true;
-			std::cout.rdbuf(nullptr);
-			std::cerr.rdbuf(nullptr);
+		app_renderer.Start();
+		Event::PollEvent();
+
+		if (!run_script) {
+			main_script.Run();
+			run_script = true;
 		}
-		global_renderer->End();
+
+		app_renderer.End();
+
+		frametime = (SDL_GetTicks() - framestart) / 1000.0f;
+
+		int delaytime = static_cast<int>((1.0f / app_framelimit) * 1000.0f - frametime);
+		if (delaytime > 0) {
+			SDL_Delay(delaytime);
+		}
 	}
 }
 
 Window& Application::GetWindow() { return app_window; }
 Renderer& Application::GetRenderer() { return app_renderer; }
 
-Console::ConsoleStatus Console::SwitchStream() {
-	switch (app_console_stream) {
-	case ConsoleStatus::STDOUT:
-		buf = std::cout.rdbuf(console_buffer.rdbuf());
-		errbuf = std::cerr.rdbuf(console_buffer.rdbuf());
-		app_console_stream = ConsoleStatus::CONSOLE;
-		return ConsoleStatus::CONSOLE;
-	case ConsoleStatus::CONSOLE:
-		std::cout.rdbuf(buf);
-		std::cerr.rdbuf(errbuf);
-		app_console_stream = ConsoleStatus::STDOUT;
-		return ConsoleStatus::STDOUT;
-	}
+void Application::SetFrameLimit(unsigned int target) {
+	app_framelimit = target;
 }
-
-Console::ConsoleStatus Console::GetStatus() { return app_console_stream; }
 
 #define index(v) static_cast<int>(v)
 

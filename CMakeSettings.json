@@ -10,14 +10,7 @@
 						"cmakeCommandArgs": "",
 						"buildCommandArgs": "",
 						"ctestCommandArgs": "",
-						"intelliSenseMode": "windows-msvc-x64",
-						"variables": [
-								{
-										"name": "CMAKE_INSTALL_PREFIX",
-										"value": "C:/Users/phamt/Documents/GitHub/Iota/debug/install/x64-Debug",
-										"type": "PATH"
-								}
-						]
+						"intelliSenseMode": "windows-msvc-x64"
 				}
 		]
 }

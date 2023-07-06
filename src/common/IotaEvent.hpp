@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sigslot/signal.hpp"
+#include "libraries/sigslot/signal.hpp"
 #include <concepts>
 #include <functional>
 #include <initializer_list>
@@ -18,11 +18,11 @@ namespace IotaEngine {
 
 	namespace Event {
 		template <typename... Args> class EventSignal {
-			using OnSignalCallback = std::function<void(Args...)>;
 		private:
 			sigslot::signal<Args...> signal;
 
 		public:
+			using OnSignalCallback = std::function<void(Args...)>;
 			EventSignal() {}
 			~EventSignal() {}
 			void Connect(OnSignalCallback fn) {

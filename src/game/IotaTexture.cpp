@@ -1,6 +1,6 @@
 #include "IotaTexture.hpp"
 #include "IotaApplication.hpp"
-#include "IotaBasic.hpp"
+#include "../common/IotaBasic.hpp"
 
 #include "SDL.h"
 #include "SDL_image.h"
