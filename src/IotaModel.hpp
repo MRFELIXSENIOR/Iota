@@ -2,8 +2,8 @@
 
 #include "IotaGameInstance.hpp"
 #include "IotaTexture.hpp"
-#include "../common/IotaBasic.hpp"
-#include "../common/IotaVector.hpp"
+#include "IotaBasic.hpp"
+#include "IotaVector.hpp"
 
 namespace IotaEngine {
 	namespace Model {

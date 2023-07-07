@@ -4,8 +4,6 @@
 using namespace IotaEngine;
 using namespace GameInstance;
 
-using namespace InstanceProperty;
-
 Instance::Instance(): parent(nullptr) {}
 Instance::~Instance() {
 	Destroy();

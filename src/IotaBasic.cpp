@@ -1,7 +1,7 @@
 #include "IotaBasic.hpp"
 #include "IotaException.hpp"
-#include "game/IotaTexture.hpp"
-#include "game/IotaApplication.hpp"
+#include "IotaTexture.hpp"
+#include "IotaApplication.hpp"
 
 #include "SDL.h"
 

@@ -13,13 +13,13 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 add_library(
 	IotaEngine
 	SHARED
-	${SRC_DIR}/game/IotaApplication.cpp
-	${SRC_DIR}/game/IotaGameInstance.cpp
-	${SRC_DIR}/common/IotaBasic.cpp
-	${SRC_DIR}/common/IotaEvent.cpp
-	${SRC_DIR}/lua/IotaScriptEnvironment.cpp
-	${SRC_DIR}/game/IotaTexture.cpp
-	${SRC_DIR}/game/IotaModel.cpp
+	${SRC_DIR}/IotaApplication.cpp
+	${SRC_DIR}/IotaGameInstance.cpp
+	${SRC_DIR}/IotaBasic.cpp
+	${SRC_DIR}/IotaEvent.cpp
+	${SRC_DIR}/IotaScriptEnvironment.cpp
+	${SRC_DIR}/IotaTexture.cpp
+	${SRC_DIR}/IotaModel.cpp
 	)
 
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)
@@ -43,6 +43,7 @@ target_link_directories(
 target_link_libraries(
 	IotaEngine
 	PRIVATE
+	lua54
 	SDL2
 	SDL2main
 	SDL2_image
@@ -50,15 +51,19 @@ target_link_libraries(
 
 add_executable(Iota ${CMAKE_SOURCE_DIR}/test/test.cpp)
 
-target_include_directories(Iota PRIVATE ${SRC_DIR})
+target_include_directories(Iota 
+	PRIVATE
+	${SRC_DIR}
+	${SRC_DIR}/libraries
+	${LIB_DIR}/lua/include
+	${LIB_DIR}/SDL2/include
+	${LIB_DIR}/SDL2_image/include
+	)
 
 target_link_libraries(
 	Iota
 	PRIVATE
 	IotaEngine
-	SDL2
-	SDL2main
-	SDL2_image
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")

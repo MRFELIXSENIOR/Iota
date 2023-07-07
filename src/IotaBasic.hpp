@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game/IotaTexture.hpp"
+#include "IotaTexture.hpp"
 
 #include <stdint.h>
 #include <string>

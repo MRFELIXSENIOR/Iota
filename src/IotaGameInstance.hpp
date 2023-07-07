@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common/IotaEvent.hpp"
-#include "common/IotaVector.hpp"
-#include "IotaApplication.hpp"
+#include "IotaEvent.hpp"
+#include "IotaException.hpp"
+#include "IotaVector.hpp"
 
 #include <optional>
 #include <string>
@@ -11,29 +11,33 @@
 #include <format>
 
 namespace IotaEngine {
+	namespace Application {
+		void ThrowException(std::string_view error_title, Exception error_code, std::string_view error_message);
+		void ThrowException(std::string_view error_title, Exception error_code);
+		void ThrowException(Exception error_code);
+	};
+
 	namespace GameInstance {
-		namespace InstanceProperty {
-			template <typename T>
-			struct Property {
-			private:
-				T value;
-				friend class Instance;
+		template <typename T>
+		struct Property {
+		private:
+			T value;
+			Event::EventSignal<T> sig;
+			friend class Instance;
 
-			public:
-				Property() {}
-				Property(std::string_view str) : property_name(str) {}
-				Property(T val) : value(val) {}
-				~Property() {}
+		public:
+			Property() {}
+			Property(std::string_view str) : property_name(str) {}
+			Property(T val) : value(val) {}
+			~Property() {}
 
-				Event::EventSignal<T> sig;
-				std::string property_name;
+			std::string property_name;
 
-				T data() { return value; }
-				void set(T v) {
-					sig.Fire(value);
-					value = v;
-				}
-			};
+			T data() { return value; }
+			Property<T>& operator=(T v) {
+				sig.Fire(value);
+				value = v;
+			}
 		};
 
 		template <typename T>
@@ -45,7 +49,7 @@ namespace IotaEngine {
 			Instance* parent;
 
 		public:
-			InstanceProperty::Property<std::string> name;
+			Property<std::string> name;
 
 			Instance();
 			~Instance();
@@ -77,7 +81,7 @@ namespace IotaEngine {
 					}
 				}
 
-				IotaEngine::Application::ThrowException(std::format("Cannot Find {} in {}", child_name, name), Application::Exception::FIND_CHILDREN_FAILURE);
+				Application::ThrowException(std::format("Cannot Find {} in {}", child_name, name), Application::Exception::FIND_CHILDREN_FAILURE);
 				return nullptr;
 			}
 
@@ -88,8 +92,8 @@ namespace IotaEngine {
 				parent_changed.Fire(inst);
 			}
 
-			template<typename PropertyType>
-			std::optional<Event::EventSignal<PropertyType>> GetPropertyChangedSignal(InstanceProperty::Property<PropertyType>& p) {
+			template<typename T>
+			std::optional<Event::EventSignal<T>> GetPropertyChangedSignal(Property<T>& p) {
 				if (!std::is_member_pointer_v<&p>) {
 					Application::ThrowException("Cannot Find Property", Application::Exception::FIND_PROPERTY_FAILURE);
 					return std::nullopt;

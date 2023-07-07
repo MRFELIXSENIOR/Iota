@@ -1,15 +1,16 @@
 #pragma once
 
-#include "game/IotaGameInstance.hpp"
 #include "sol/sol.hpp"
+#include "IotaGameInstance.hpp"
 
 #include <string>
+#include <exception>
 
 namespace IotaEngine {
 	namespace Lua {
 		struct Script : GameInstance::Instance {
 		private:
-			GameInstance::InstanceProperty::Property<std::string> file_name;
+			GameInstance::Property<std::string> file_name;
 
 		public:
 			Script();
@@ -24,6 +25,10 @@ namespace IotaEngine {
 		};
 
 		void LoadSTD();
+
 		sol::state& GetState();
+		sol::table& GetIota();
+
+		int ErrorHandle(lua_State* L, sol::optional<const std::exception&> maybe_err, sol::string_view desc);
 	};
 };

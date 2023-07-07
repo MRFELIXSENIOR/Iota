@@ -1,5 +1,5 @@
 #include "IotaEvent.hpp"
-#include "../game/IotaApplication.hpp"
+#include "IotaApplication.hpp"
 
 #include <iostream>
 
