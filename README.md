@@ -1,3 +1,3 @@
 # Iota
 
-# MSVC 2d game engine
+sdl2 game engine wip
