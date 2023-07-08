@@ -4,8 +4,7 @@ using namespace IotaEngine;
 
 int main() {
 	Application::Initialize("Window Title", 640, 480);
-	Lua::Script script("test.lua");
-	Application::Start(script);
+	Application::Start();
 
 	return 0;
 }

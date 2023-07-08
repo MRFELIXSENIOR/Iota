@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace IotaEngine {
+namespace iota {
 	namespace Vector {
 		template<typename T>
 		concept IsArithmetic = std::is_arithmetic_v<T>;

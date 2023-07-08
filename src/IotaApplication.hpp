@@ -8,7 +8,7 @@
 #include <exception>
 #include <string>
 
-namespace IotaEngine {
+namespace iota {
 	namespace Application {
 		using IotaMainFunction = std::function<void()>;
 
@@ -18,12 +18,11 @@ namespace IotaEngine {
 		Window& GetWindow();
 		Renderer& GetRenderer();
 
-		bool Clean();
+		bool Exit();
 
 		bool IsRunning();
 
-		void ErrorHandle(const std::exception& ex);
 		void SetFrameLimit(unsigned int target);
 		void test();
 	}; // namespace Application
-}; // namespace IotaEngine
+}; // namespace iota

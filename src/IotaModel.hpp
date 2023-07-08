@@ -5,7 +5,7 @@
 #include "IotaBasic.hpp"
 #include "IotaVector.hpp"
 
-namespace IotaEngine {
+namespace iota {
 	namespace Model {
 		class Part : GameInstance::Instance {
 		private:

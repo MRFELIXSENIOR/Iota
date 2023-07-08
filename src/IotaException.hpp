@@ -3,16 +3,12 @@
 #include <string>
 #include <exception>
 
-namespace IotaEngine {
+namespace iota {
 	namespace Application {
-		class RuntimeException : public std::runtime_error {
-		public:
-			explicit RuntimeException(const std::string& str) : std::runtime_error(str) {}
-		};
+		void Error(std::string_view msg);
+		void Error(std::string_view title, std::string_view msg);
 
-		class Exception : public std::exception {
-		public:
-			explicit Exception(const std::string& str) : std::exception(str) {}
-		};
+		void Panic(std::string_view msg);
+		void Panic(std::string_view title, std::string_view msg);
 	};
 };

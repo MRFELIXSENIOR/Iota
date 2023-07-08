@@ -1,7 +1,7 @@
 #include "IotaGameInstance.hpp"
 #include "IotaApplication.hpp"
 
-using namespace IotaEngine;
+using namespace iota;
 using namespace GameInstance;
 
 Instance::Instance(): parent(nullptr) {}

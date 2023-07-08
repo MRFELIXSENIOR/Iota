@@ -10,13 +10,7 @@
 #include <iostream>
 #include <format>
 
-namespace IotaEngine {
-	namespace Application {
-		void ThrowException(std::string_view error_title, Exception error_code, std::string_view error_message);
-		void ThrowException(std::string_view error_title, Exception error_code);
-		void ThrowException(Exception error_code);
-	};
-
+namespace iota {
 	namespace GameInstance {
 		template <typename T>
 		struct Property {
@@ -81,7 +75,7 @@ namespace IotaEngine {
 					}
 				}
 
-				Application::ThrowException(std::format("Cannot Find {} in {}", child_name, name), Application::Exception::FIND_CHILDREN_FAILURE);
+				throw Application::Error(std::format("Cannot Find {} in {}", child_name, name));
 				return nullptr;
 			}
 
@@ -95,7 +89,7 @@ namespace IotaEngine {
 			template<typename T>
 			std::optional<Event::EventSignal<T>> GetPropertyChangedSignal(Property<T>& p) {
 				if (!std::is_member_pointer_v<&p>) {
-					Application::ThrowException("Cannot Find Property", Application::Exception::FIND_PROPERTY_FAILURE);
+					throw Application::Error(std::format("Cannot Find Property: {}", p.property_name));
 					return std::nullopt;
 				}
 
@@ -103,4 +97,4 @@ namespace IotaEngine {
 			}
 		};
 	} // namespace GameInstance
-} // namespace IotaEngine
+} // namespace iota

@@ -5,7 +5,7 @@
 
 #include "SDL.h"
 
-using namespace IotaEngine;
+using namespace iota;
 using namespace Event;
 
 KeyListener::KeyListener() noexcept {}
@@ -51,7 +51,7 @@ void Event::PollEvent() {
 	while (SDL_PollEvent(&event) != 0) {
 		switch (event.type) {
 		case SDL_QUIT:
-			Application::Clean();
+			Application::Exit();
 			break;
 		}
 	}

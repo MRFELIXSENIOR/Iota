@@ -12,7 +12,7 @@ struct SDL_Renderer;
 struct SDL_Rect;
 struct SDL_Surface;
 
-namespace IotaEngine {
+namespace iota {
 
 	SDL_Color GetColor(uint8_t red, uint8_t green, uint8_t blue,
 		uint8_t alpha = 0xFF);
@@ -87,4 +87,4 @@ namespace IotaEngine {
 		void BasicClean();
 		void Clean(Window& win, Renderer& rdrer);
 	};
-} // namespace IotaEngine
+} // namespace iota

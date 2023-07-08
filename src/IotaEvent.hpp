@@ -1,21 +1,15 @@
 #pragma once
 
-#include "libraries/sigslot/signal.hpp"
-#include <concepts>
+#include "sigslot/signal.hpp"
+#include "SDL.h"
+
+#include "IotaGameInstance.hpp"
+
 #include <functional>
 #include <initializer_list>
 #include <vector>
 
-typedef unsigned int KeyType;
-
-union SDL_Event;
-
-namespace IotaEngine {
-	namespace GameInstance {
-		class InstanceCore;
-		class Instance;
-	}
-
+namespace iota {
 	namespace Event {
 		template <typename... Args> class EventSignal {
 		private:
@@ -33,13 +27,12 @@ namespace IotaEngine {
 			void Fire(Args... args) { signal(args...); }
 		};
 
-		enum KeyState {
-			KEYSTATENULL = 0,
-			KEYSTATERELEASE = 1,
-			KEYSTATEDOWN = 2,
+		enum class KeyState {
+			KEYRELEASE,
+			KEYDOWN,
 		};
 
-		using KeyStateSignal = EventSignal<KeyState>;
+		using KeyStateSignal = EventSignal<KeyState, >;
 
 		struct KeyEvent : KeyStateSignal {
 		private:
@@ -71,4 +64,4 @@ namespace IotaEngine {
 		void PollEvent();
 
 	}; // namespace Event
-}; // namespace IotaEngine
+}; // namespace iota

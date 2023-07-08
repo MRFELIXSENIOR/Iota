@@ -10,7 +10,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 
-using namespace IotaEngine;
+using namespace iota;
 using namespace Application;
 
 static Window app_window;
@@ -27,12 +27,12 @@ void Application::test() {
 
 bool Application::Initialize(std::string_view window_title, int window_width, int window_height) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-		throw Application::RuntimeException("SDL Initialization Failure");
+		Application::Panic("SDL Initialization Failure");
 		return false;
 	}
 
 	if (!(IMG_Init(IMG_INIT_PNG))) {
-		throw Application::RuntimeException("SDL_Image Initialization Failure");
+		Application::Panic("SDL_Image Initialization Failure");
 		return false;
 	}
 
@@ -44,7 +44,7 @@ bool Application::Initialize(std::string_view window_title, int window_width, in
 	return true;
 }
 
-bool Application::Clean() {
+bool Application::Exit() {
 	if (app_running == false)
 		return false;
 
@@ -59,7 +59,7 @@ bool Application::IsRunning() { return app_running; }
 
 void Application::Start() {
 	if (app_initialized == false) {
-		throw Application::RuntimeException("Application Not Initialized");
+		Application::Panic("Application Not Initialized");
 		return;
 	}
 
@@ -85,10 +85,6 @@ void Application::Start() {
 
 Window& Application::GetWindow() { return app_window; }
 Renderer& Application::GetRenderer() { return app_renderer; }
-
-void Application::ErrorHandle(const std::exception& e) {
-	std::cerr << "[IOTA] [Error Thrown!]\n" << "[Message]: " << e.what() << '\n';
-}
 
 void Application::SetFrameLimit(unsigned int target) {
 	app_framelimit = target;

@@ -5,32 +5,32 @@
 
 #include "SDL.h"
 
-using namespace IotaEngine;
+using namespace iota;
 
 static WindowManager window_manager;
 
-Color::Color(): red(0), green(0), blue(0), alpha(0) {}
+Color::Color() : red(0), green(0), blue(0), alpha(0) {}
 Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : red(r), green(g), blue(b), alpha() {}
 SDL_Color Color::data() {
 	SDL_Color c = { red, green, blue, alpha };
 	return c;
 }
 
-SDL_Color IotaEngine::GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
+SDL_Color iota::GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
 	return { red, green, blue, alpha };
 }
 
 Renderer::Renderer() : renderer(nullptr) {}
 Renderer::Renderer(Window& win) {
 	if (!win.window) {
-		Application::ThrowRuntimeException("Cannot Create Renderer with Uninitialized Window", Application::RuntimeException::RENDERER_CREATION_FAILURE);
+		Application::Error("Cannot Create Renderer with Uninitialized Window");
 	}
 
 	renderer = SDL_CreateRenderer(win.window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
-		Application::ThrowRuntimeException(
+		Application::Error(
 			"Failed To Create Renderer!",
-			Application::RuntimeException::RENDERER_CREATION_FAILURE, SDL_GetError());
+			SDL_GetError());
 	}
 
 	window_manager.AddRenderer(this);
@@ -39,15 +39,15 @@ Renderer::~Renderer() { Destroy(); }
 
 bool Renderer::Create(Window& win) {
 	if (!win.window) {
-		Application::ThrowRuntimeException("Cannot Create Renderer with Uninitialized Window", Application::RuntimeException::RENDERER_CREATION_FAILURE);
+		Application::Error("Cannot Create Renderer with Uninitialized Window");
 		return false;
 	}
 
 	renderer = SDL_CreateRenderer(win.window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
-		Application::ThrowRuntimeException(
+		Application::Error(
 			"Failed To Create Renderer!",
-			Application::RuntimeException::RENDERER_CREATION_FAILURE, SDL_GetError());
+			SDL_GetError());
 		return false;
 	}
 
@@ -72,9 +72,7 @@ Window::Window(std::string_view window_title, int window_width,
 		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
 	if (!window) {
-		Application::ThrowRuntimeException("Failed To Create Window!",
-			Application::RuntimeException::WINDOW_CREATION_FAILURE,
-			SDL_GetError());
+		Application::Error("Failed To Create Window!", SDL_GetError());
 	}
 
 	window_manager.AddWindow(this);
@@ -87,8 +85,7 @@ bool Window::Create(std::string_view window_title, int window_width,
 		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
 	if (!window) {
-		Application::ThrowRuntimeException("Failed To Create Window!",
-			Application::RuntimeException::WINDOW_CREATION_FAILURE,
+		Application::Error("Failed To Create Window!",
 			SDL_GetError());
 		return false;
 	}
@@ -105,14 +102,14 @@ void Window::Destroy() {
 WindowManager::WindowManager() {}
 WindowManager::~WindowManager() {}
 
-void WindowManager::RemoveWindow(Window* win) { 
+void WindowManager::RemoveWindow(Window* win) {
 	auto it = std::find(windows.begin(), windows.end(), win);
 	if (it != windows.end()) {
 		windows.erase(it);
 	}
 }
 
-void WindowManager::RemoveRenderer(Renderer* rdrer) {	
+void WindowManager::RemoveRenderer(Renderer* rdrer) {
 	auto it = std::find(renderers.begin(), renderers.end(), rdrer);
 	if (it != renderers.end()) {
 		renderers.erase(it);

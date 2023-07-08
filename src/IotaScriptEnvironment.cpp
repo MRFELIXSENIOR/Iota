@@ -2,15 +2,27 @@
 #include "IotaGameInstance.hpp"
 #include "IotaApplication.hpp"
 
-using namespace IotaEngine;
+#include <map>
+#include <thread>
+#include <mutex>
+
+using namespace iota;
 using namespace Lua;
 
 static sol::state lua;
 static sol::table iota;
 
-Script::Script() {}
-Script::Script(std::string_view file) : file_name(file) {}
-Script::~Script() {}
+static std::mutex script_mutex;
+static std::map<std::string, Script*> script_container;
+
+Script::Script(std::string_view file) : file_name(file) {
+	std::pair<std::string, Script*> script = std::make_pair(file.data(), this);
+	script_container.insert(script);
+}
+
+Script::~Script() {
+	script_container.erase(file_name.data());
+}
 
 void Script::Run() {
 	try {
@@ -26,16 +38,13 @@ void Lua::LoadSTD() {
 
 	iota = lua.create_table();
 	lua.set("Iota", iota);
-	
-	sol::table app = lua.create_table();
-	iota["app"] = app;
 }
 
 sol::state& Lua::GetState() { return lua; }
 sol::table& Lua::GetIota() { return iota; }
 
 int Lua::ErrorHandle(lua_State* L, sol::optional<const std::exception&> maybe_err, sol::string_view desc) {
-	std::cerr << "[IOTA] [Script Error Thrown!]\n";
+	std::cerr << "[IOTA] [Script Error!]\n";
 	if (maybe_err) {
 		std::cerr << "[Message]: ";
 		const std::exception& e = *maybe_err;
@@ -46,4 +55,16 @@ int Lua::ErrorHandle(lua_State* L, sol::optional<const std::exception&> maybe_er
 	}
 
 	return sol::stack::push(L, desc);
+}
+
+void run_all() {
+	std::lock_guard<std::mutex> lock(script_mutex);
+
+	for (auto& s : script_container) {
+		s.second->Run();
+	}
+}
+
+void Lua::RunAllScript() {
+	std::thread thread(run_all);
 }

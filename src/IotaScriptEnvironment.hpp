@@ -6,14 +6,13 @@
 #include <string>
 #include <exception>
 
-namespace IotaEngine {
+namespace iota {
 	namespace Lua {
 		struct Script : GameInstance::Instance {
 		private:
 			GameInstance::Property<std::string> file_name;
 
 		public:
-			Script();
 			Script(std::string_view file);
 			~Script();
 
@@ -30,5 +29,6 @@ namespace IotaEngine {
 		sol::table& GetIota();
 
 		int ErrorHandle(lua_State* L, sol::optional<const std::exception&> maybe_err, sol::string_view desc);
+		void RunAllScript();
 	};
 };

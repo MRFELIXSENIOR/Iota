@@ -1,6 +1,6 @@
 #include "IotaModel.hpp"
 
-using namespace IotaEngine;
+using namespace iota;
 using namespace Model;
 
 Part::Part() {}

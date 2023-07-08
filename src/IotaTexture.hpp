@@ -1,11 +1,11 @@
 #pragma once
 
+#include "IotaBasic.hpp"
+
 #include <string>
+#include "SDL.h"
 
-struct SDL_Texture;
-
-namespace IotaEngine {
-	class Renderer;
+namespace iota {
 	class Texture {
 	private:
 		SDL_Texture* texture;
@@ -18,4 +18,4 @@ namespace IotaEngine {
 		Texture& LoadTexture(std::string_view path, Renderer& rdrer);
 		Texture& LoadTexture(std::string_view path);
 	};
-} // namespace IotaEngine
+} // namespace iota
