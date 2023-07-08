@@ -17,11 +17,9 @@ void Application::Error(std::string_view title, std::string_view msg) {
 void Application::Panic(std::string_view msg) {
 	std::cerr << "[IOTA] [Panic!]\n[Message]: " << msg << '\n';
 	Exit();
-	std::exit(-1);
 }
 
 void Application::Panic(std::string_view title, std::string_view msg) {
 	std::cerr << "[IOTA] [Panic!]\n[Title]: " << title << '\n' << "[Message]: " << msg << '\n';
 	Exit();	
-	std::exit(-1);
 }

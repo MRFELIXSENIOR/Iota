@@ -10,8 +10,6 @@
 
 namespace iota {
 	namespace Application {
-		using IotaMainFunction = std::function<void()>;
-
 		bool Initialize(std::string_view window_title, int window_width, int window_height);
 		void Start();
 
@@ -21,8 +19,8 @@ namespace iota {
 		bool Exit();
 
 		bool IsRunning();
+		bool IsInitialized();
 
 		void SetFrameLimit(unsigned int target);
-		void test();
 	}; // namespace Application
 }; // namespace iota

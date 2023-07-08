@@ -12,6 +12,8 @@
 
 namespace iota {
 	namespace GameInstance {
+		class Instance;
+
 		template <typename T>
 		struct Property {
 		private:

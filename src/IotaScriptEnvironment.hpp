@@ -2,6 +2,7 @@
 
 #include "sol/sol.hpp"
 #include "IotaGameInstance.hpp"
+#include "IotaEvent.hpp"
 
 #include <string>
 #include <exception>
@@ -25,7 +26,7 @@ namespace iota {
 
 		void LoadSTD();
 
-		sol::state& GetState();
+		sol::state& GetEngineLuaState();
 		sol::table& GetIota();
 
 		int ErrorHandle(lua_State* L, sol::optional<const std::exception&> maybe_err, sol::string_view desc);

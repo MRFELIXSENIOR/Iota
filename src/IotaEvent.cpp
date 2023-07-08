@@ -1,57 +1,30 @@
 #include "IotaEvent.hpp"
 #include "IotaApplication.hpp"
+#include "IotaKeyboard.hpp"
+#include "IotaScriptEnvironment.hpp"
 
 #include <iostream>
 
-#include "SDL.h"
+#include <SDL.h>
 
 using namespace iota;
 using namespace Event;
 
-KeyListener::KeyListener() noexcept {}
-KeyListener::KeyListener(std::initializer_list<KeyEvent*> event_list)
-	: registered_events(event_list) {}
-KeyListener::~KeyListener() {}
-
-bool KeyListener::AddEvent(KeyEvent* event) {
-	for (KeyEvent* keyev : registered_events) {
-		if ((event != nullptr && keyev == event) || event == nullptr) {
-			return false;
-		}
-		else {
-			registered_events.push_back(event);
-			break;
-		}
-	}
-	return true;
-}
-
-void KeyListener::Fire(KeyType key, KeyState keyState) {
-	KeyEvent* selected;
-	for (KeyEvent* keyev : registered_events) {
-		if (keyev->key == key)
-			selected = keyev;
-	}
-
-	selected->Fire(keyState);
-}
-
-void KeyListener::DisconnectAll() {
-	for (KeyEvent* keyev : registered_events) {
-		keyev->Disconnect();
-	}
-}
-
-KeyEvent::KeyEvent(KeyType key, KeyState key_state)
-	: key(key), key_state(key_state) {}
-KeyEvent::~KeyEvent() {}
+static SDL_Event global_ev;
 
 void Event::PollEvent() {
-	SDL_Event event;
-	while (SDL_PollEvent(&event) != 0) {
-		switch (event.type) {
+	if (SDL_PollEvent(&global_ev) != 0) {
+		switch (global_ev.type) {
 		case SDL_QUIT:
 			Application::Exit();
+			break;
+
+		case SDL_KEYDOWN:
+			Keyboard::HandleKeyEvent(global_ev.key, Keyboard::KeyState::DOWN);
+			break;
+
+		case SDL_KEYUP:
+			Keyboard::HandleKeyEvent(global_ev.key, Keyboard::KeyState::RELEASE);
 			break;
 		}
 	}

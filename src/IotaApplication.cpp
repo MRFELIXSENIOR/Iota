@@ -21,9 +21,8 @@ static bool app_initialized = false;
 
 static int app_framelimit = 60;
 
-void Application::test() {
-	std::cout << "test\n";
-}
+bool Application::IsInitialized() { return app_initialized; }
+bool Application::IsRunning() { return app_running; }
 
 bool Application::Initialize(std::string_view window_title, int window_width, int window_height) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -36,10 +35,10 @@ bool Application::Initialize(std::string_view window_title, int window_width, in
 		return false;
 	}
 
-	app_initialized = true;
+	Lua::LoadSTD();
 	app_window.Create(window_title, window_width, window_height);
 	app_renderer.Create(app_window);
-	Lua::LoadSTD();
+	app_initialized = true;
 
 	return true;
 }
@@ -55,17 +54,16 @@ bool Application::Exit() {
 	return true;
 }
 
-bool Application::IsRunning() { return app_running; }
-
 void Application::Start() {
 	if (app_initialized == false) {
-		Application::Panic("Application Not Initialized");
+		Application::Panic("Application Is Not Initialized!");
 		return;
 	}
 
 	app_running = true;
 	Uint32 framestart;
 	float frametime;
+	Lua::RunAllScript();
 	while (app_running == true) {
 		framestart = SDL_GetTicks();
 

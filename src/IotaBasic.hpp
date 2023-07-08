@@ -1,8 +1,6 @@
 #pragma once
 
-#include "IotaTexture.hpp"
-
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -13,6 +11,7 @@ struct SDL_Rect;
 struct SDL_Surface;
 
 namespace iota {
+	class Texture;
 
 	SDL_Color GetColor(uint8_t red, uint8_t green, uint8_t blue,
 		uint8_t alpha = 0xFF);
