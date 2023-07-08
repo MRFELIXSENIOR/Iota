@@ -264,7 +264,7 @@ namespace iota {
 		std::map<KeyCode, std::string>& GetKeystringEntries();
 
 		void LoadLuaSTD();
-		void HandleKeyEvent(SDL_KeyboardEvent ev, KeyState state);
+		void HandleKeyEvent(SDL_Scancode scancode, KeyState state);
 
 		bool IsKeyDown(KeyCode key);
 		bool IsKeyReleased(KeyCode key);

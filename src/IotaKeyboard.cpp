@@ -1,6 +1,7 @@
 #include "IotaKeyboard.hpp"
 #include "IotaEvent.hpp"
 #include "IotaScriptEnvironment.hpp"
+#include "IotaApplication.hpp"
 
 #include <vector>
 #include <sol/sol.hpp>
@@ -500,11 +501,11 @@ static std::map<KeyCode, std::string> KeystringEntries = {
 	{ KeyCode::AudioFastForward, "AudioFastForward" }
 };
 
-static Event::EventSignal<Keyboard::KeyCode> keydown_event;
-static Event::EventSignal<Keyboard::KeyCode> keyup_event;
+static Event::EventSignal<KeyCode> keydown_event;
+static Event::EventSignal<KeyCode> keyup_event;
 
-static std::vector<Keyboard::KeyCode> keys_up;
-static std::vector<Keyboard::KeyCode> keys_down;
+static std::vector<KeyCode> keys_up;
+static std::vector<KeyCode> keys_down;
 
 SDL_Scancode Keyboard::GetKey(KeyCode key) {
 	for (auto& k : KeyCodeEntries) {
@@ -524,6 +525,7 @@ std::map<SDL_Scancode, KeyCode>& Keyboard::GetKeyEntries() { return KeyCodeEntri
 std::map<KeyCode, std::string>& Keyboard::GetKeystringEntries() { return KeystringEntries; }
 
 void Keyboard::LoadLuaSTD() {
+	if (Application::IsInitialized()) return;
 	sol::table& Iota = Lua::GetIota();
 	sol::state& lua = Lua::GetEngineLuaState();
 
@@ -531,17 +533,17 @@ void Keyboard::LoadLuaSTD() {
 	Iota["Input"]["OnKeyDown"] = lua.create_table();
 	Iota["Input"]["OnKeyRelease"] = lua.create_table();
 
-	Iota["Input"]["IsKeyDown"] = &Keyboard::IsKeyDown;
-	Iota["Input"]["IsKeyRelease"] = &Keyboard::IsKeyReleased;
+	Iota["Input"]["IsKeyDown"] = &IsKeyDown;
+	Iota["Input"]["IsKeyRelease"] = &IsKeyReleased;
 
 	Iota["Input"]["OnKeyDown"]["Connect"] = [](sol::function fn) {
-		keydown_event.Connect([fn](Keyboard::KeyCode key) mutable {
+		keydown_event.Connect([fn](KeyCode key) mutable {
 			fn.call(key);
 		});
 	};
 
 	Iota["Input"]["OnKeyRelease"]["Connect"] = [](sol::function fn) {
-		keyup_event.Connect([fn](Keyboard::KeyCode key) mutable {
+		keyup_event.Connect([fn](KeyCode key) mutable {
 			fn.call(key);
 		});
 	};
@@ -550,8 +552,13 @@ void Keyboard::LoadLuaSTD() {
 	Iota["Enum"]["KeyCode"] = lua.create_table();
 
 	for (auto& k : Keyboard::GetKeyEntries()) {
-		Iota["Enum"]["KeyCode"][Keyboard::GetKeystringEntries().at(k.second)] = (int)k.first;
+		Iota["Enum"]["KeyCode"][GetKeystringEntries().at(k.second)] = (int)k.first;
 	}
+
+	Iota["Utilities"] = lua.create_table();
+	Iota["Utilities"]["ConvertKeyCode"] = [&](KeyCode key) {
+		return GetKeystringEntries().at(key);
+	};
 }
 
 bool Keyboard::IsKeyDown(KeyCode key) {
@@ -570,11 +577,10 @@ bool Keyboard::IsKeyReleased(KeyCode key) {
 	return false;
 }
 
-void Keyboard::HandleKeyEvent(SDL_KeyboardEvent ev, KeyState state) {
-	if (state == KeyState::DOWN) {
-		SDL_Scancode scancode = ev.keysym.scancode;
-		Keyboard::KeyCode key = Keyboard::GetKey(scancode);
+void Keyboard::HandleKeyEvent(SDL_Scancode scancode, KeyState state) {
+	KeyCode key = GetKey(scancode);
 
+	if (state == KeyState::DOWN) {
 		keydown_event.Fire(key);
 
 		auto it = std::find(keys_up.begin(), keys_up.end(), key);
@@ -584,9 +590,6 @@ void Keyboard::HandleKeyEvent(SDL_KeyboardEvent ev, KeyState state) {
 		}
 	}
 	else if (state == KeyState::RELEASE) {
-		SDL_Scancode scancode = ev.keysym.scancode;
-		Keyboard::KeyCode key = Keyboard::GetKey(scancode);
-
 		keyup_event.Fire(key);
 
 		auto it = std::find(keys_up.begin(), keys_up.end(), key);

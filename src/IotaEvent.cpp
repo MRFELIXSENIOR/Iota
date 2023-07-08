@@ -20,11 +20,11 @@ void Event::PollEvent() {
 			break;
 
 		case SDL_KEYDOWN:
-			Keyboard::HandleKeyEvent(global_ev.key, Keyboard::KeyState::DOWN);
+			Keyboard::HandleKeyEvent(global_ev.key.keysym.scancode, Keyboard::KeyState::DOWN);
 			break;
 
 		case SDL_KEYUP:
-			Keyboard::HandleKeyEvent(global_ev.key, Keyboard::KeyState::RELEASE);
+			Keyboard::HandleKeyEvent(global_ev.key.keysym.scancode, Keyboard::KeyState::RELEASE);
 			break;
 		}
 	}

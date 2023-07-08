@@ -1,16 +1,9 @@
-Iota.Input.OnKeyDown.Connect(function(key)
-	if (Iota.Enum.KeyCode.A == key) then
-		print("A key is pressed")
-	end
-end)
-
-local boolthing = true
+print('from lua!!!!!')
 
 Iota.Input.OnKeyDown.Connect(function(key)
-	if (Iota.Enum.KeyCode.G == key) then
-		boolthing = false
-		print("stopped")
-	end
+	print("You Pressed: ", Iota.Utilities.ConvertKeyCode(key))
 end)
 
-print(Iota.Input.IsKeyDown(Iota.Enum.KeyCode.Q));
+Iota.Input.OnKeyRelease.Connect(function(key)
+	print("You Released: ", Iota.Utilities.ConvertKeyCode(key))
+end)
