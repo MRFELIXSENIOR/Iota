@@ -10,7 +10,7 @@
 
 namespace iota {
 	namespace Application {
-		bool Initialize(std::string_view window_title, int window_width, int window_height);
+		bool Initialize(const std::string& window_title, int window_width, int window_height);
 		void Start();
 
 		Window& GetWindow();

@@ -1,46 +1,27 @@
 #include "IotaTexture.hpp"
 #include "IotaApplication.hpp"
+#include "IotaScriptEnvironment.hpp"
 
-#include "SDL_image.h"
+#include <SDL_image.h>
 
 using namespace iota;
 
 Texture::Texture() : texture(nullptr) {}
-Texture& Texture::LoadTexture(std::string_view path) {
-	SDL_Texture* result;
-
-	SDL_Surface* surface = IMG_Load(path.data());
-	if (!surface)
-		Application::Error("Failed To Load Texture File!",
-			SDL_GetError());
-
-	result = SDL_CreateTextureFromSurface(Application::GetRenderer().renderer, surface);
+Texture& Texture::LoadTexture(const std::string& path) {
+	SDL_Texture* result = IMG_LoadTexture(Application::GetRenderer().renderer, path.c_str());
 	if (!result) {
-		Application::Error(
-			"Failed To Create Texture From Surface",
-			SDL_GetError());
+		Application::Error("Texture Load Failure", SDL_GetError());
 	}
 
-	SDL_FreeSurface(surface);
 	texture = result;
 	return *this;
 }
-Texture& Texture::LoadTexture(std::string_view path, Renderer& rdrer) {
-	SDL_Texture* result;
-
-	SDL_Surface* surface = IMG_Load(path.data());
-	if (!surface)
-		Application::Error("Failed To Load Texture File!",
-			SDL_GetError());
-
-	result = SDL_CreateTextureFromSurface(rdrer.renderer, surface);
+Texture& Texture::LoadTextureWithRenderer(const std::string& path, Renderer& rdrer) {
+	SDL_Texture* result = IMG_LoadTexture(rdrer.renderer, path.c_str());
 	if (!result) {
-		Application::Error(
-			"Failed To Create Texture From Surface",
-			SDL_GetError());
+		Application::Error("Texture Load Failure", SDL_GetError());
 	}
 
-	SDL_FreeSurface(surface);
 	texture = result;
 	return *this;
 }
@@ -50,3 +31,16 @@ Texture::~Texture() {
 }
 
 SDL_Texture* Texture::data() { return texture; }
+
+void Texture::LoadLuaSTD() {
+	if (Application::IsInitialized()) return;
+	sol::state& lua = Lua::GetEngineLuaState();
+	sol::table& Iota = Lua::GetIota();
+
+	sol::usertype<Texture> texture = lua.new_usertype<Texture>(
+		"Texture",
+		sol::constructors<Texture()>());
+
+	texture["LoadTexture"] = &Texture::LoadTexture;
+	texture["LoadTextureWithRenderer"] = &Texture::LoadTextureWithRenderer;
+}

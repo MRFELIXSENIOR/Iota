@@ -529,10 +529,6 @@ void Keyboard::LoadLuaSTD() {
 	sol::table& Iota = Lua::GetIota();
 	sol::state& lua = Lua::GetEngineLuaState();
 
-	Iota["Input"] = lua.create_table();
-	Iota["Input"]["OnKeyDown"] = lua.create_table();
-	Iota["Input"]["OnKeyRelease"] = lua.create_table();
-
 	Iota["Input"]["IsKeyDown"] = &IsKeyDown;
 	Iota["Input"]["IsKeyRelease"] = &IsKeyReleased;
 
@@ -548,15 +544,11 @@ void Keyboard::LoadLuaSTD() {
 		});
 	};
 
-	Iota["Enum"] = lua.create_table();
-	Iota["Enum"]["KeyCode"] = lua.create_table();
-
 	for (auto& k : Keyboard::GetKeyEntries()) {
 		Iota["Enum"]["KeyCode"][GetKeystringEntries().at(k.second)] = (int)k.first;
 	}
 
-	Iota["Utilities"] = lua.create_table();
-	Iota["Utilities"]["ConvertKeyCode"] = [&](KeyCode key) {
+	Iota["Util"]["ConvertKeyCode"] = [&](KeyCode key) {
 		return GetKeystringEntries().at(key);
 	};
 }

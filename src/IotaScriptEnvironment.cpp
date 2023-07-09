@@ -3,6 +3,8 @@
 #include "IotaApplication.hpp"
 #include "IotaEvent.hpp"
 #include "IotaKeyboard.hpp"
+#include "IotaBasic.hpp"
+#include "IotaTexture.hpp"
 
 #include <SDL.h>
 
@@ -47,7 +49,21 @@ void Lua::LoadSTD() {
 	Iota = lua.create_table();
 	lua["Iota"] = Iota;
 
+	Iota["GetWindow"] = &Application::GetWindow;
+	Iota["GetRenderer"] = &Application::GetRenderer;
+
+	Iota["Input"] = lua.create_table();
+	Iota["Input"]["OnKeyDown"] = lua.create_table();
+	Iota["Input"]["OnKeyRelease"] = lua.create_table();
+
+	Iota["Util"] = lua.create_table();
+
+	Iota["Enum"] = lua.create_table();
+	Iota["Enum"]["KeyCode"] = lua.create_table();
+
 	Keyboard::LoadLuaSTD();
+	Basic::LoadLuaSTD();
+	Texture::LoadLuaSTD();
 }
 
 sol::state& Lua::GetEngineLuaState() { return lua; }

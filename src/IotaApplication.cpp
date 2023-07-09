@@ -24,7 +24,7 @@ static int app_framelimit = 60;
 bool Application::IsInitialized() { return app_initialized; }
 bool Application::IsRunning() { return app_running; }
 
-bool Application::Initialize(std::string_view window_title, int window_width, int window_height) {
+bool Application::Initialize(const std::string& window_title, int window_width, int window_height) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		Application::Panic("SDL Initialization Failure");
 		return false;
@@ -47,7 +47,6 @@ bool Application::Exit() {
 	if (app_running == false)
 		return false;
 
-	BasicClean();
 	IMG_Quit();
 	SDL_Quit();
 	app_running = false;
@@ -67,8 +66,10 @@ void Application::Start() {
 	while (app_running == true) {
 		framestart = SDL_GetTicks();
 
-		app_renderer.Start();
 		Event::PollEvent();
+		app_renderer.Start();
+
+		app_renderer.RenderScreen();
 
 		app_renderer.End();
 
