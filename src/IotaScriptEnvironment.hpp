@@ -1,9 +1,8 @@
 #pragma once
 
-#include "sol/sol.hpp"
 #include "IotaGameInstance.hpp"
-#include "IotaEvent.hpp"
 
+#include <sol/sol.hpp>
 #include <string>
 #include <exception>
 
@@ -12,24 +11,34 @@ namespace iota {
 		struct Script : GameInstance::Instance {
 		private:
 			GameInstance::Property<std::string> file_name;
+			bool attached;
+			std::string attached_instance_name;
+			friend class GameInstance::Instance;
 
 		public:
-			Script(std::string_view file);
+			Script(std::string file);
 			~Script();
 
 			void Run();
+			template <GameInstance::IsInstance T>
+			void Attach(T& inst) {
+				attached = true;
 
-			sol::function Load;
-			sol::function Update;
-			sol::function Render;
+				attached_instance_name = inst.name.data();
+				Lua::GetState()[attached_instance_name] = &inst;
+				inst.attached_scripts.push_back(this);
+			}
+
+			sol::protected_function_result execution_result;
 		};
 
 		void LoadSTD();
 
-		sol::state& GetEngineLuaState();
-		sol::table& GetIota();
+		sol::state& GetState();
 
-		int ErrorHandle(lua_State* L, sol::optional<const std::exception&> maybe_err, sol::string_view desc);
+		sol::table& GetIota();
+		sol::table& GetEnum();
+
 		void RunAllScript();
 	};
 };

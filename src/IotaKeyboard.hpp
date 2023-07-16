@@ -260,8 +260,8 @@ namespace iota {
 		SDL_Scancode GetKey(KeyCode key);
 		KeyCode GetKey(SDL_Scancode scancode);
 
-		std::map<SDL_Scancode, KeyCode>& GetKeyEntries();
-		std::map<KeyCode, std::string>& GetKeystringEntries();
+		const std::map<SDL_Scancode, KeyCode>& GetKeyEntries();
+		const std::map<KeyCode, std::string>& GetKeystringEntries();
 
 		void LoadLuaSTD();
 		void HandleKeyEvent(SDL_Scancode scancode, KeyState state);

@@ -29,3 +29,11 @@ void Event::PollEvent() {
 		}
 	}
 }
+
+
+
+void Event::LoadLuaSTD() {
+	sol::state& lua = Lua::GetState();
+	sol::table& Iota = Lua::GetIota();
+	sol::table& Enum = Lua::GetEnum();
+}

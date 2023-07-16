@@ -5,10 +5,10 @@
 
 namespace iota {
 	namespace Application {
-		void Error(std::string_view msg);
-		void Error(std::string_view title, std::string_view msg);
+		void Error(const std::string& msg);
+		void Error(const std::string& title, const std::string& msg);
 
-		void Panic(std::string_view msg);
-		void Panic(std::string_view title, std::string_view msg);
+		void Panic(const std::string& msg);
+		void Panic(const std::string& title, const std::string& msg);
 	};
 };

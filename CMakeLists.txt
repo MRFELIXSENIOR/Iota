@@ -22,6 +22,7 @@ add_library(
 	${SRC_DIR}/IotaScriptEnvironment.cpp
 	${SRC_DIR}/IotaTexture.cpp
 	${SRC_DIR}/IotaModel.cpp
+	${SRC_DIR}/IotaVector.cpp
 	)
 
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)

@@ -521,31 +521,26 @@ KeyCode Keyboard::GetKey(SDL_Scancode scancode) {
 	return KeyCodeEntries.at(scancode);
 }
 
-std::map<SDL_Scancode, KeyCode>& Keyboard::GetKeyEntries() { return KeyCodeEntries; }
-std::map<KeyCode, std::string>& Keyboard::GetKeystringEntries() { return KeystringEntries; }
+const std::map<SDL_Scancode, KeyCode>& Keyboard::GetKeyEntries() { return KeyCodeEntries; }
+const std::map<KeyCode, std::string>& Keyboard::GetKeystringEntries() { return KeystringEntries; }
 
 void Keyboard::LoadLuaSTD() {
-	if (Application::IsInitialized()) return;
 	sol::table& Iota = Lua::GetIota();
-	sol::state& lua = Lua::GetEngineLuaState();
+	sol::table& Enum = Lua::GetEnum();
+	sol::state& lua = Lua::GetState();
+
+	Event::BindScriptSignal<KeyCode>();
+
+	Iota["Input"] = lua.create_table();
+	Iota["Input"]["OnKeyDown"] = &keydown_event;
+	Iota["Input"]["OnKeyRelease"] = &keyup_event;
 
 	Iota["Input"]["IsKeyDown"] = &IsKeyDown;
 	Iota["Input"]["IsKeyRelease"] = &IsKeyReleased;
 
-	Iota["Input"]["OnKeyDown"]["Connect"] = [](sol::function fn) {
-		keydown_event.Connect([fn](KeyCode key) mutable {
-			fn.call(key);
-		});
-	};
-
-	Iota["Input"]["OnKeyRelease"]["Connect"] = [](sol::function fn) {
-		keyup_event.Connect([fn](KeyCode key) mutable {
-			fn.call(key);
-		});
-	};
-
+	Enum["KeyCode"] = lua.create_table();
 	for (auto& k : Keyboard::GetKeyEntries()) {
-		Iota["Enum"]["KeyCode"][GetKeystringEntries().at(k.second)] = (int)k.first;
+		Enum["KeyCode"][GetKeystringEntries().at(k.second)] = (int)k.first;
 	}
 
 	Iota["Util"]["ConvertKeyCode"] = [&](KeyCode key) {

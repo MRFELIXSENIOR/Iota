@@ -1,102 +1,91 @@
 #pragma once
 
 #include "IotaEvent.hpp"
-#include "IotaException.hpp"
-#include "IotaVector.hpp"
 
 #include <optional>
+#include <map>
+#include <vector>
 #include <string>
-#include <typeinfo>
-#include <iostream>
+#include <type_traits>
 #include <format>
+#include <concepts>
+#include <cstdint>
+#include <sol/sol.hpp>
 
 namespace iota {
-	namespace GameInstance {
-		class Instance;
+	class Renderer;
+	namespace Lua {
+		struct Script;
+		sol::state& GetState();
+	};
 
+	namespace GameInstance {
 		template <typename T>
 		struct Property {
 		private:
 			T value;
-			Event::EventSignal<T> sig;
-			friend class Instance;
+			Event::EventSignal<T> signal;
 
 		public:
 			Property() {}
-			Property(std::string_view str) : property_name(str) {}
-			Property(T val) : value(val) {}
+			explicit Property(T val) : value(val) {}
 			~Property() {}
 
 			std::string property_name;
 
 			T data() { return value; }
-			Property<T>& operator=(T v) {
-				sig.Fire(value);
-				value = v;
-			}
+			void set(T val) { signal.Fire(value); value = val; }
+			Property<T>& operator=(T v) { set(v); }
+			Event::EventSignal<T>& GetValueChangedSignal() { return signal; }
+
+			bool operator==(const T& rhs) { return (value == rhs); }
+			bool operator!=(const T& rhs) { return (value != rhs); }
 		};
 
-		template <typename T>
-		concept IsInstance = std::is_base_of_v<Instance, T>;
+		template<typename T, typename P>
+		concept IsProperty = std::is_base_of_v<Property<P>, T>;
 
 		class Instance {
-		private:
-			std::vector<Instance*> children;
-			Instance* parent;
-
 		public:
 			Property<std::string> name;
 
 			Instance();
 			~Instance();
 
-			Event::EventSignal<Instance*> child_added;
-			Event::EventSignal<Instance*> parent_changed;
-			Event::EventSignal<> destroying;
+			uint64_t ID();
 
-			virtual void Destroy();
-			std::vector<Instance*> GetChildren();
-			void ClearAllChildren();
+			virtual void Load();
+			virtual void Render();
+			virtual void Update();
 
-			template <IsInstance T>
-			T* AddChildren(T* inst) {
-				if (this == static_cast<decltype(this)>(inst)) return nullptr;
+		private:
+			std::vector<Lua::Script*> attached_scripts;
+			friend class Lua::Script;
 
-				inst->SetParent(this);
-				children.push_back(static_cast<Instance*>(inst));
-				child_added.Fire(inst);
-
-				return inst;
-			}
-
-			template <IsInstance T>
-			T* GetChild(std::string_view child_name) {
-				for (Instance* inst : children) {
-					if (inst->name == child_name) {
-						return dynamic_cast<T*>(inst);
-					}
-				}
-
-				throw Application::Error(std::format("Cannot Find {} in {}", child_name, name));
-				return nullptr;
-			}
-
-			template <IsInstance T>
-			void SetParent(T* inst) {
-				if (static_cast<decltype(this)>(inst) == this) return;
-				parent = inst;
-				parent_changed.Fire(inst);
-			}
-
-			template<typename T>
-			std::optional<Event::EventSignal<T>> GetPropertyChangedSignal(Property<T>& p) {
-				if (!std::is_member_pointer_v<&p>) {
-					throw Application::Error(std::format("Cannot Find Property: {}", p.property_name));
-					return std::nullopt;
-				}
-
-				return p.sig;
-			}
+		protected:
+			Renderer* renderer;
+			uint64_t id;
 		};
+
+		template <typename T>
+		concept IsInstance = std::is_base_of_v<Instance, T>;
+
+		template <typename T>
+		sol::usertype<Property<T>> BindPropertyType() {
+			sol::state& lua = Lua::GetState();
+
+			sol::usertype<Property<T>> property = lua.new_usertype<Property<T>>("Property", sol::no_constructor);
+			property["Value"] = sol::property(&Property<T>::data, &Property<T>::set);
+			property.set("Name", sol::readonly(&Property<T>::property_name));
+
+			Event::BindScriptSignal<T>();
+
+			return property;
+		}
+
+		void LoadLuaSTD();
+
+		using InstanceMap = std::map<uint64_t, Instance*>;
+		const InstanceMap& GetInstanceMap();
 	} // namespace GameInstance
 } // namespace iota

@@ -8,12 +8,14 @@
 #include <SDL.h>
 
 using namespace iota;
+using namespace Basic;
 
 std::vector<Window*> windows;
 std::vector<Renderer*> renderers;
-std::vector<Texture*> texture_list;
 
-std::vector<Texture*>& Basic::GetTextureList() { return texture_list; }
+static TextureMap texture_map;
+
+const TextureMap& Basic::GetTextureMap() { return texture_map; }
 
 Color::Color() : red(0), green(0), blue(0), alpha(0) {}
 Color::~Color() {}
@@ -27,7 +29,7 @@ Color iota::GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
 	return Color(red, green, blue, alpha);
 }
 
-Renderer::Renderer() : renderer(nullptr) {}
+Renderer::Renderer() {}
 Renderer::Renderer(Window& win) {
 	if (!win.window) {
 		Application::Error("Cannot Create Renderer with Uninitialized Window");
@@ -62,18 +64,30 @@ bool Renderer::Create(Window& win) {
 	return true;
 }
 
-void Renderer::Start() { SDL_RenderClear(renderer); }
-void Renderer::End() { SDL_RenderPresent(renderer); }
-
 void Renderer::SetDrawColor(Color color) { SDL_SetRenderDrawColor(renderer, color.red, color.green, color.blue, color.alpha); }
-void Renderer::RenderTexture(Texture& texture) { texture_list.push_back(&texture); }
-void Renderer::RenderScreen() {
-	for (Texture* t : texture_list) {
-		SDL_RenderCopy(renderer, t->data(), NULL, NULL);
-	} 
+
+// Texture
+
+void Renderer::RenderTextureToScreen(Texture& texture) {
+	texture_map.insert(std::make_pair(&texture, RenderingContext::TO_SCREEN));
 }
-void Renderer::RenderTextureToSurface(Texture& texture, RenderSurface surface) {
-	//SDL_RenderCopy(renderer, texture.data(), NULL, &surface.data());
+
+void Renderer::RenderTextureToSurface(Texture& texture, RenderSurface& surface) {
+	texture_map.insert(std::make_pair(&texture, RenderingContext::TO_RS));
+	texture.surface = &surface;
+}
+
+// Models
+
+void Renderer::DrawRectangle(DrawMode mode, RenderSurface& surface) {
+	switch (mode) {
+	case DrawMode::FILL:
+		SDL_RenderFillRect(renderer, surface.data());
+		break;
+
+	case DrawMode::OUTLINE:
+		SDL_RenderDrawRect(renderer, surface.data());
+	}
 }
 
 void Renderer::Destroy() {
@@ -84,7 +98,9 @@ void Renderer::Destroy() {
 	SDL_DestroyRenderer(renderer);
 }
 
-Window::Window() : window(nullptr) {}
+SDL_Renderer* Renderer::data() const { return renderer; }
+
+Window::Window() {}
 Window::Window(std::string window_title, unsigned int window_width,
 	unsigned int window_height) {
 	window = SDL_CreateWindow(
@@ -122,12 +138,27 @@ void Window::Destroy() {
 	SDL_DestroyWindow(window);
 }
 
-RenderSurface::RenderSurface() {}
-RenderSurface::RenderSurface(int x, int y, unsigned int width, unsigned int height) {
-	rect.x = x;
-	rect.y = y;
-	rect.w = width;
-	rect.h = height;
+SDL_Window* Window::data() const { return window; }
+
+int Window::GetCenterX() {
+	int x;
+	SDL_GetWindowSize(window, &x, NULL);
+	return x / 2;
+}
+
+int Window::GetCenterY() {
+	int y;
+	SDL_GetWindowSize(window, NULL, &y);
+	return y / 2;
+}
+
+RenderSurface::RenderSurface(): rect(new SDL_Rect) {}
+RenderSurface::RenderSurface(int x, int y, unsigned int width, unsigned int height) :
+	rect(new SDL_Rect) {
+	rect->x = x;
+	rect->y = y;
+	rect->w = width;
+	rect->h = height;
 }
 /*
 RenderSurface::RenderSurface(Vector::Vec2<int> position, Vector::Vec2<unsigned int> size) {
@@ -146,8 +177,8 @@ RenderSurface::~RenderSurface() {}
 //}
 
 void RenderSurface::SetPosition(int x, int y) {
-	rect.x = x;
-	rect.y = y;
+	rect->x = x;
+	rect->y = y;
 }
 //
 //void RenderSurface::Resize(Vector::Vec2<unsigned int> size) {
@@ -156,15 +187,26 @@ void RenderSurface::SetPosition(int x, int y) {
 //}
 
 void RenderSurface::Resize(unsigned int width, unsigned int height) {
-	rect.w = width;
-	rect.h = height;
+	rect->w = width;
+	rect->h = height;
 }
 
-SDL_Rect RenderSurface::data() const { return rect; }
+SDL_Rect* RenderSurface::data() const { return rect; }
+
+sol::table GetCenter(Window& self) {
+	int x = self.GetCenterX();
+	int y = self.GetCenterY();
+
+	sol::table center = Lua::GetState().create_table();
+	center["x"] = x;
+	center["y"] = y;
+
+	return center;
+}
 
 void Basic::LoadLuaSTD() {
 	if (Application::IsInitialized()) return;
-	sol::state& lua = Lua::GetEngineLuaState();
+	sol::state& lua = Lua::GetState();
 	sol::table& Iota = Lua::GetIota();
 
 	sol::usertype<Color> color = lua.new_usertype<Color>("Color", sol::constructors<Color(), Color(uint8_t, uint8_t, uint8_t, uint8_t)>());
@@ -173,12 +215,13 @@ void Basic::LoadLuaSTD() {
 	sol::usertype<Window> window = lua.new_usertype<Window>("Window", sol::constructors<Window(), Window(std::string, unsigned int, unsigned int)>());
 	window["Create"] = &Window::Create;
 	window["Destroy"] = &Window::Destroy;
+	window["GetCenter"] = &GetCenter;
 
 	sol::usertype<Renderer> renderer = lua.new_usertype<Renderer>("Renderer", sol::constructors<Renderer(), Renderer(Window&)>());
 	renderer["Create"] = &Renderer::Create;
 	renderer["Destroy"] = &Renderer::Destroy;
 
-	renderer["RenderTexture"] = &Renderer::RenderTexture;
+	renderer["RenderTextureToScreen"] = &Renderer::RenderTextureToScreen;
 	renderer["RenderTextureToSurface"] = &Renderer::RenderTextureToSurface;
 
 	sol::usertype<RenderSurface> surface = lua.new_usertype<RenderSurface>(

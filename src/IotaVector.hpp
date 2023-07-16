@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <sol/sol.hpp>
 
 namespace iota {
 	namespace Vector {
@@ -35,4 +36,19 @@ namespace iota {
 			T Magnitude() { return std::sqrt(x * x + y * y); }
 		};
 	};
+
+	namespace Lua {
+		sol::state& GetState();
+	}
+
+	template <typename T>
+	sol::usertype<Vector::Vec2<T>> BindVectorType() {
+		sol::state& lua = Lua::GetState();
+
+		sol::usertype<Vector::Vec2<T>> vector = lua.new_usertype<Vector::Vec2<T>>("Vector2", sol::constructors<Vector::Vec2<T>(T, T), Vector::Vec2<T>()>());
+		vector["x"] = &Vector::Vec2<T>::x;
+		vector["y"] = &Vector::Vec2<T>::y;
+
+		return vector;
+	}
 };

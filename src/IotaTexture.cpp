@@ -1,12 +1,14 @@
 #include "IotaTexture.hpp"
 #include "IotaApplication.hpp"
 #include "IotaScriptEnvironment.hpp"
+#include "IotaException.hpp"
+#include "IotaBasic.hpp"
 
 #include <SDL_image.h>
 
 using namespace iota;
 
-Texture::Texture() : texture(nullptr) {}
+Texture::Texture() : texture(nullptr), surface(nullptr) {}
 Texture& Texture::LoadTexture(const std::string& path) {
 	SDL_Texture* result = IMG_LoadTexture(Application::GetRenderer().renderer, path.c_str());
 	if (!result) {
@@ -34,7 +36,7 @@ SDL_Texture* Texture::data() { return texture; }
 
 void Texture::LoadLuaSTD() {
 	if (Application::IsInitialized()) return;
-	sol::state& lua = Lua::GetEngineLuaState();
+	sol::state& lua = Lua::GetState();
 	sol::table& Iota = Lua::GetIota();
 
 	sol::usertype<Texture> texture = lua.new_usertype<Texture>(

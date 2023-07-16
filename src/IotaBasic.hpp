@@ -9,8 +9,26 @@
 #include "IotaVector.hpp"
 
 namespace iota {
-	class RenderSurface;
 	class Texture;
+	class RenderSurface;
+
+	namespace Basic {
+		enum class RenderingContext {
+			TO_SCREEN,
+			TO_RS,
+		};
+
+		enum class DrawMode {
+			FILL,
+			OUTLINE,
+		};
+
+		void LoadLuaSTD();
+
+		using TextureMap = std::unordered_map<Texture*, RenderingContext>;
+		const TextureMap& GetTextureMap();
+	};
+
 
 	struct Color final {
 		uint8_t red, green, blue, alpha;
@@ -38,6 +56,11 @@ namespace iota {
 		bool Create(std::string window_title, unsigned int window_width,
 			unsigned int window_height);
 		void Destroy();
+
+		int GetCenterX();
+		int GetCenterY();
+
+		SDL_Window* data() const;
 	};
 
 	class Renderer {
@@ -52,20 +75,21 @@ namespace iota {
 		~Renderer();
 
 		bool Create(Window& win);
-		void Start();
-		void End();
 		void Destroy();
 
 		void SetDrawColor(Color color);
 
-		void RenderTexture(Texture& texture);
-		void RenderScreen();
-		void RenderTextureToSurface(Texture& texture, RenderSurface surface);
+		void RenderTextureToScreen(Texture& texture);
+		void RenderTextureToSurface(Texture& texture, RenderSurface& surface);
+
+		void DrawRectangle(Basic::DrawMode mode, RenderSurface& surface);
+
+		SDL_Renderer* data() const;
 	};
 
-	class RenderSurface {
+	struct RenderSurface final {
 	private:
-		SDL_Rect rect;
+		SDL_Rect* rect;
 
 	public:
 		RenderSurface();
@@ -78,11 +102,6 @@ namespace iota {
 		void Resize(unsigned int width, unsigned int height);
 		//void Resize(Vector::Vec2<unsigned int> size);
 
-		SDL_Rect data() const;
+		SDL_Rect* data() const;
 	};
-
-	namespace Basic {
-		void LoadLuaSTD();
-		std::vector<Texture*>& GetTextureList();
-	}
 } // namespace iota

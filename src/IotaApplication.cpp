@@ -1,6 +1,9 @@
 #include "IotaApplication.hpp"
+#include "IotaException.hpp"
 #include "IotaBasic.hpp"
+#include "IotaScriptEnvironment.hpp"
 #include "IotaEvent.hpp"
+#include "IotaTexture.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -35,9 +38,9 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 		return false;
 	}
 
-	Lua::LoadSTD();
 	app_window.Create(window_title, window_width, window_height);
 	app_renderer.Create(app_window);
+	Lua::LoadSTD();
 	app_initialized = true;
 
 	return true;
@@ -63,21 +66,48 @@ void Application::Start() {
 	Uint32 framestart;
 	float frametime;
 	Lua::RunAllScript();
+
+	const GameInstance::InstanceMap& inst_map = GameInstance::GetInstanceMap();
+	for (auto& i : inst_map) {
+		i.second->Load();
+	}
+
+	Basic::TextureMap map = Basic::GetTextureMap();
 	while (app_running == true) {
 		framestart = SDL_GetTicks();
 
 		Event::PollEvent();
-		app_renderer.Start();
+		SDL_RenderClear(app_renderer.data());
 
-		app_renderer.RenderScreen();
+		const Basic::TextureMap& text_map = Basic::GetTextureMap();
+		for (auto& t : text_map) {
+			switch (t.second) {
+			case Basic::RenderingContext::TO_SCREEN:
+				SDL_RenderCopy(app_renderer.data(), t.first->data(), NULL, NULL);
+				break;
 
-		app_renderer.End();
+			case Basic::RenderingContext::TO_RS:
+				SDL_RenderCopy(app_renderer.data(), t.first->data(), NULL, t.first->surface->data());
+				break;
+			}
+		}
+
+		for (auto& i : inst_map) {
+			i.second->Render();
+		}
+
+		SDL_SetRenderDrawColor(app_renderer.data(), 0, 0, 0, 0);
+		SDL_RenderPresent(app_renderer.data());
 
 		frametime = (SDL_GetTicks() - framestart) / 1000.0f;
 
 		int delaytime = static_cast<int>((1.0f / app_framelimit) * 1000.0f - frametime);
 		if (delaytime > 0) {
 			SDL_Delay(delaytime);
+		}
+
+		for (auto& i : inst_map) {
+			i.second->Update();
 		}
 	}
 }
