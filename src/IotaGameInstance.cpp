@@ -9,25 +9,25 @@
 using namespace iota;
 using namespace GameInstance;
 
-static InstanceMap inst_map;
-const InstanceMap& GameInstance::GetInstanceMap() { return inst_map; }
-
+static Basic::ActorMap actor_map;
 static uint64_t inst_id;
 
-Instance::Instance(): renderer(&Application::GetRenderer()) {
-	id = inst_id++;
+const Basic::ActorMap& Basic::GetActorMap() { return actor_map; }
 
-	if (std::is_same_v<decltype(this), Instance*>) {
-		inst_map.insert(std::make_pair(id, this));
+uint64_t Basic::GameBehavior::GetID() { return id; }
+
+Instance::Instance() {
+	if (SDL_GetKeyboardFocus()) {
+		actor_window = std::make_unique<Window>(SDL_GetKeyboardFocus());
+		actor_renderer = std::make_unique<Renderer>(*actor_window, true);
+		id = inst_id++;
 	}
-	else {
-		inst_map.insert(std::make_pair(id, static_cast<Instance*>(this)));
-	}
+
+	auto&& a = std::make_pair(id, static_cast<Basic::GameBehavior*>(this));
+	actor_map.insert(a);
 }
 
 Instance::~Instance() {}
-
-uint64_t Instance::ID() { return id; }
 
 void Instance::Load() {}
 void Instance::Render() {}

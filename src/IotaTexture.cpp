@@ -10,7 +10,7 @@ using namespace iota;
 
 Texture::Texture() : texture(nullptr), surface(nullptr) {}
 Texture& Texture::LoadTexture(const std::string& path) {
-	SDL_Texture* result = IMG_LoadTexture(Application::GetRenderer().renderer, path.c_str());
+	SDL_Texture* result = IMG_LoadTexture(Application::GetRenderer().data(), path.c_str());
 	if (!result) {
 		Application::Error("Texture Load Failure", SDL_GetError());
 	}
@@ -18,8 +18,8 @@ Texture& Texture::LoadTexture(const std::string& path) {
 	texture = result;
 	return *this;
 }
-Texture& Texture::LoadTextureWithRenderer(const std::string& path, Renderer& rdrer) {
-	SDL_Texture* result = IMG_LoadTexture(rdrer.renderer, path.c_str());
+Texture& Texture::LoadTexture(const std::string& path, Renderer& rdrer) {
+	SDL_Texture* result = IMG_LoadTexture(rdrer.data(), path.c_str());
 	if (!result) {
 		Application::Error("Texture Load Failure", SDL_GetError());
 	}
@@ -43,6 +43,8 @@ void Texture::LoadLuaSTD() {
 		"Texture",
 		sol::constructors<Texture()>());
 
-	texture["LoadTexture"] = &Texture::LoadTexture;
-	texture["LoadTextureWithRenderer"] = &Texture::LoadTextureWithRenderer;
+	texture.set_function("LoadTexture", sol::overload(
+		static_cast<Texture& (Texture::*)(const std::string&)>(&Texture::LoadTexture),
+		static_cast<Texture& (Texture::*)(const std::string&, Renderer&)>(&Texture::LoadTexture)
+	));
 }

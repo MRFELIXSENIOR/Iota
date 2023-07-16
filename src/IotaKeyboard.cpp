@@ -529,7 +529,7 @@ void Keyboard::LoadLuaSTD() {
 	sol::table& Enum = Lua::GetEnum();
 	sol::state& lua = Lua::GetState();
 
-	Event::BindScriptSignal<KeyCode>();
+	Event::BindScriptSignalType<KeyCode>();
 
 	Iota["Input"] = lua.create_table();
 	Iota["Input"]["OnKeyDown"] = &keydown_event;

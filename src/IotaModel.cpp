@@ -31,8 +31,8 @@ void Object::Load() {
 }
 
 void Object::Render() {
-	renderer->SetDrawColor(color);
-	renderer->DrawRectangle(Basic::DrawMode::FILL, rs);
+	actor_renderer->SetDrawColor(color);
+	actor_renderer->DrawRectangle(Basic::DrawMode::OUTLINE, rs);
 }
 
 void Object::Update() {}

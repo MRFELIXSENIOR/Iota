@@ -67,33 +67,21 @@ void Application::Start() {
 	float frametime;
 	Lua::RunAllScript();
 
-	const GameInstance::InstanceMap& inst_map = GameInstance::GetInstanceMap();
-	for (auto& i : inst_map) {
-		i.second->Load();
+	SDL_RaiseWindow(app_window.data());
+
+	const Basic::ActorMap& actor_map = Basic::GetActorMap();
+	for (auto& a : actor_map) {
+		a.second->Load();
 	}
 
-	Basic::TextureMap map = Basic::GetTextureMap();
 	while (app_running == true) {
 		framestart = SDL_GetTicks();
 
 		Event::PollEvent();
 		SDL_RenderClear(app_renderer.data());
 
-		const Basic::TextureMap& text_map = Basic::GetTextureMap();
-		for (auto& t : text_map) {
-			switch (t.second) {
-			case Basic::RenderingContext::TO_SCREEN:
-				SDL_RenderCopy(app_renderer.data(), t.first->data(), NULL, NULL);
-				break;
-
-			case Basic::RenderingContext::TO_RS:
-				SDL_RenderCopy(app_renderer.data(), t.first->data(), NULL, t.first->surface->data());
-				break;
-			}
-		}
-
-		for (auto& i : inst_map) {
-			i.second->Render();
+		for (auto& a : actor_map) {
+			a.second->Render();
 		}
 
 		SDL_SetRenderDrawColor(app_renderer.data(), 0, 0, 0, 0);
@@ -106,8 +94,8 @@ void Application::Start() {
 			SDL_Delay(delaytime);
 		}
 
-		for (auto& i : inst_map) {
-			i.second->Update();
+		for (auto& a : actor_map) {
+			a.second->Update();
 		}
 	}
 }

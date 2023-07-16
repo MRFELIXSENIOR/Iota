@@ -32,7 +32,7 @@ namespace iota {
 		void LoadLuaSTD();
 
 		template <typename... Args>
-		sol::usertype<Event::EventSignal<Args...>> BindScriptSignal() {
+		sol::usertype<Event::EventSignal<Args...>> BindScriptSignalType() {
 			sol::state& lua = Lua::GetState();
 
 			sol::usertype<Event::EventSignal<Args...>> script_signal = lua.new_usertype<Event::EventSignal<Args...>>("ScriptSignal", sol::no_constructor);

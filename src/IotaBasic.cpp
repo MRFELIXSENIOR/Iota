@@ -10,13 +10,6 @@
 using namespace iota;
 using namespace Basic;
 
-std::vector<Window*> windows;
-std::vector<Renderer*> renderers;
-
-static TextureMap texture_map;
-
-const TextureMap& Basic::GetTextureMap() { return texture_map; }
-
 Color::Color() : red(0), green(0), blue(0), alpha(0) {}
 Color::~Color() {}
 Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : red(r), green(g), blue(b), alpha() {}
@@ -31,18 +24,27 @@ Color iota::GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
 
 Renderer::Renderer() {}
 Renderer::Renderer(Window& win) {
-	if (!win.window) {
+	if (!win.data()) {
 		Application::Error("Cannot Create Renderer with Uninitialized Window");
 	}
-
-	renderer = SDL_CreateRenderer(win.window, -1, SDL_RENDERER_ACCELERATED);
-	if (!renderer) {
-		Application::Error(
-			"Failed To Create Renderer!",
-			SDL_GetError());
+	else {
+		renderer = SDL_CreateRenderer(win.data(), -1, SDL_RENDERER_ACCELERATED);
+		if (!renderer) {
+			Application::Error(
+				"Failed To Create Renderer!",
+				SDL_GetError());
+		}
 	}
-
-	renderers.push_back(this);
+}
+Renderer::Renderer(Window& win, bool points) {
+	if (!win.data() || !SDL_GetRenderer(win.data())) {
+		Application::Error("Failed To Create A Renderer With Null Window or Renderer Associated Is Null");
+	}
+	else {
+		if (points) {
+			renderer = SDL_GetRenderer(win.data());
+		}
+	}
 }
 Renderer::~Renderer() { Destroy(); }
 
@@ -59,8 +61,6 @@ bool Renderer::Create(Window& win) {
 			SDL_GetError());
 		return false;
 	}
-
-	renderers.push_back(this);
 	return true;
 }
 
@@ -68,13 +68,12 @@ void Renderer::SetDrawColor(Color color) { SDL_SetRenderDrawColor(renderer, colo
 
 // Texture
 
-void Renderer::RenderTextureToScreen(Texture& texture) {
-	texture_map.insert(std::make_pair(&texture, RenderingContext::TO_SCREEN));
+void Renderer::RenderTexture(Texture& texture) {
+	SDL_RenderCopy(renderer, texture.data(), NULL, NULL);
 }
 
-void Renderer::RenderTextureToSurface(Texture& texture, RenderSurface& surface) {
-	texture_map.insert(std::make_pair(&texture, RenderingContext::TO_RS));
-	texture.surface = &surface;
+void Renderer::RenderTexture(Texture& texture, RenderSurface& surface) {
+	SDL_RenderCopy(renderer, texture.data(), NULL, surface.data());
 }
 
 // Models
@@ -91,10 +90,6 @@ void Renderer::DrawRectangle(DrawMode mode, RenderSurface& surface) {
 }
 
 void Renderer::Destroy() {
-	auto it = std::find(renderers.begin(), renderers.end(), this);
-	if (it != renderers.end()) {
-		renderers.erase(it);
-	}
 	SDL_DestroyRenderer(renderer);
 }
 
@@ -109,9 +104,16 @@ Window::Window(std::string window_title, unsigned int window_width,
 	if (!window) {
 		Application::Error("Failed To Create Window!", SDL_GetError());
 	}
-
-	windows.push_back(this);
 }
+Window::Window(SDL_Window* win) {
+	if (!win) {
+		Application::Error("Failed To Create Window With A Null Window!");
+	}
+	else {
+		window = win;
+	}
+}
+
 Window::~Window() { Destroy(); }
 
 bool Window::Create(std::string window_title, unsigned int window_width,
@@ -125,16 +127,10 @@ bool Window::Create(std::string window_title, unsigned int window_width,
 			SDL_GetError());
 		return false;
 	}
-
-	windows.push_back(this);
 	return true;
 }
 
 void Window::Destroy() {
-	auto it = std::find(windows.begin(), windows.end(), this);
-	if (it != windows.end()) {
-		windows.erase(it);
-	}
 	SDL_DestroyWindow(window);
 }
 
@@ -152,7 +148,7 @@ int Window::GetCenterY() {
 	return y / 2;
 }
 
-RenderSurface::RenderSurface(): rect(new SDL_Rect) {}
+RenderSurface::RenderSurface() : rect(new SDL_Rect) {}
 RenderSurface::RenderSurface(int x, int y, unsigned int width, unsigned int height) :
 	rect(new SDL_Rect) {
 	rect->x = x;
@@ -160,31 +156,31 @@ RenderSurface::RenderSurface(int x, int y, unsigned int width, unsigned int heig
 	rect->w = width;
 	rect->h = height;
 }
-/*
-RenderSurface::RenderSurface(Vector::Vec2<int> position, Vector::Vec2<unsigned int> size) {
-	rect.x = position.x;
-	rect.y = position.y;
-	rect.w = size.x;
-	rect.h = size.y;
+
+RenderSurface::RenderSurface(Vector::Vec2<int> position, Vector::Vec2<unsigned int> size) :
+	rect(new SDL_Rect) {
+	rect->x = position.x;
+	rect->y = position.y;
+	rect->w = size.x;
+	rect->h = size.y;
 }
-*/
 
 RenderSurface::~RenderSurface() {}
-//
-//void RenderSurface::SetPosition(Vector::Vec2<int> position) {
-//	rect.x = position.x;
-//	rect.y = position.y;
-//}
+
+void RenderSurface::SetPosition(Vector::Vec2<int> position) {
+	rect->x = position.x;
+	rect->y = position.y;
+}
 
 void RenderSurface::SetPosition(int x, int y) {
 	rect->x = x;
 	rect->y = y;
 }
-//
-//void RenderSurface::Resize(Vector::Vec2<unsigned int> size) {
-//	rect.w = size.x;
-//	rect.h = size.y;
-//}
+
+void RenderSurface::Resize(Vector::Vec2<unsigned int> size) {
+	rect->w = size.x;
+	rect->h = size.y;
+}
 
 void RenderSurface::Resize(unsigned int width, unsigned int height) {
 	rect->w = width;
@@ -217,18 +213,23 @@ void Basic::LoadLuaSTD() {
 	window["Destroy"] = &Window::Destroy;
 	window["GetCenter"] = &GetCenter;
 
-	sol::usertype<Renderer> renderer = lua.new_usertype<Renderer>("Renderer", sol::constructors<Renderer(), Renderer(Window&)>());
-	renderer["Create"] = &Renderer::Create;
-	renderer["Destroy"] = &Renderer::Destroy;
-
-	renderer["RenderTextureToScreen"] = &Renderer::RenderTextureToScreen;
-	renderer["RenderTextureToSurface"] = &Renderer::RenderTextureToSurface;
+	sol::usertype<Renderer> renderer = lua.new_usertype<Renderer>("Renderer", sol::constructors<Renderer(Window&)>());
 
 	sol::usertype<RenderSurface> surface = lua.new_usertype<RenderSurface>(
 		"RenderSurface",
-		sol::constructors<RenderSurface(), RenderSurface(int, int, unsigned int, unsigned int)>()
+		sol::constructors<RenderSurface(), RenderSurface(int, int, unsigned int, unsigned int), RenderSurface(Vector::Vec2<int>, Vector::Vec2<unsigned int>)>()
 	);
 
-	surface["SetPosition"] = &RenderSurface::SetPosition;
-	surface["Resize"] = &RenderSurface::Resize;
+	BindVectorType<int>();
+	BindVectorType<unsigned int>();
+
+	surface.set_function("SetPosition", sol::overload(
+		static_cast<void (RenderSurface::*)(Vector::Vec2<int>)>(&RenderSurface::SetPosition),
+		static_cast<void (RenderSurface::*)(int, int)>(&RenderSurface::SetPosition)
+	));
+
+	surface.set_function("Resize", sol::overload(
+		static_cast<void (RenderSurface::*)(Vector::Vec2<unsigned int>)>(&RenderSurface::Resize),
+		static_cast<void (RenderSurface::*)(unsigned int, unsigned int)>(&RenderSurface::Resize)
+	));
 }

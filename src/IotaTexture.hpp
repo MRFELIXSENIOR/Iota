@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
+#include <SDL.h>
 
-struct SDL_Texture;
+#include "IotaGameInstance.hpp"
 
 namespace iota {
 	class Renderer;
@@ -16,8 +17,6 @@ namespace iota {
 	private:
 		SDL_Texture* texture;
 		RenderSurface* surface;
-		friend void Application::Start();
-		friend class Renderer;
 
 	public:
 		Texture();
@@ -25,7 +24,7 @@ namespace iota {
 		SDL_Texture* data();
 
 		Texture& LoadTexture(const std::string& path);
-		Texture& LoadTextureWithRenderer(const std::string& path, Renderer& rdrer);
+		Texture& LoadTexture(const std::string& path, Renderer& rdrer);
 		static void LoadLuaSTD();
 	};
 } // namespace iota

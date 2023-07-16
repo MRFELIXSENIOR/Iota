@@ -2,21 +2,41 @@
 
 #include "IotaEvent.hpp"
 
-#include <optional>
 #include <map>
 #include <vector>
 #include <string>
 #include <type_traits>
-#include <format>
+#include <memory>
 #include <concepts>
 #include <cstdint>
 #include <sol/sol.hpp>
 
 namespace iota {
 	class Renderer;
+	class Window;
 	namespace Lua {
 		struct Script;
 		sol::state& GetState();
+	};
+
+	namespace Basic {
+		struct GameBehavior {
+		protected:
+			std::unique_ptr<Renderer> actor_renderer;
+			std::unique_ptr<Window> actor_window;
+
+			uint64_t id;
+
+		public:
+			virtual void Load() = 0;
+			virtual void Render() = 0;
+			virtual void Update() = 0;
+
+			uint64_t GetID();
+		};
+
+		using ActorMap = std::map<uint64_t, GameBehavior*>;
+		const ActorMap& GetActorMap();
 	};
 
 	namespace GameInstance {
@@ -45,14 +65,12 @@ namespace iota {
 		template<typename T, typename P>
 		concept IsProperty = std::is_base_of_v<Property<P>, T>;
 
-		class Instance {
+		class Instance : protected Basic::GameBehavior {
 		public:
 			Property<std::string> name;
 
 			Instance();
 			~Instance();
-
-			uint64_t ID();
 
 			virtual void Load();
 			virtual void Render();
@@ -61,10 +79,6 @@ namespace iota {
 		private:
 			std::vector<Lua::Script*> attached_scripts;
 			friend class Lua::Script;
-
-		protected:
-			Renderer* renderer;
-			uint64_t id;
 		};
 
 		template <typename T>
@@ -78,14 +92,11 @@ namespace iota {
 			property["Value"] = sol::property(&Property<T>::data, &Property<T>::set);
 			property.set("Name", sol::readonly(&Property<T>::property_name));
 
-			Event::BindScriptSignal<T>();
+			Event::BindScriptSignalType<T>();
 
 			return property;
 		}
 
 		void LoadLuaSTD();
-
-		using InstanceMap = std::map<uint64_t, Instance*>;
-		const InstanceMap& GetInstanceMap();
 	} // namespace GameInstance
 } // namespace iota

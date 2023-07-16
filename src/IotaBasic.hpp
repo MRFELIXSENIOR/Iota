@@ -24,9 +24,6 @@ namespace iota {
 		};
 
 		void LoadLuaSTD();
-
-		using TextureMap = std::unordered_map<Texture*, RenderingContext>;
-		const TextureMap& GetTextureMap();
 	};
 
 
@@ -46,11 +43,11 @@ namespace iota {
 	private:
 		SDL_Window* window;
 		friend class Renderer;
-		friend class WindowManager;
 
 	public:
 		Window();
 		Window(std::string window_title, unsigned int window_width, unsigned int window_height);
+		Window(SDL_Window* window);
 		~Window();
 
 		bool Create(std::string window_title, unsigned int window_width,
@@ -63,30 +60,6 @@ namespace iota {
 		SDL_Window* data() const;
 	};
 
-	class Renderer {
-	private:
-		SDL_Renderer* renderer;
-		friend class Window;
-		friend class Texture;
-
-	public:
-		Renderer();
-		Renderer(Window& win);
-		~Renderer();
-
-		bool Create(Window& win);
-		void Destroy();
-
-		void SetDrawColor(Color color);
-
-		void RenderTextureToScreen(Texture& texture);
-		void RenderTextureToSurface(Texture& texture, RenderSurface& surface);
-
-		void DrawRectangle(Basic::DrawMode mode, RenderSurface& surface);
-
-		SDL_Renderer* data() const;
-	};
-
 	struct RenderSurface final {
 	private:
 		SDL_Rect* rect;
@@ -94,14 +67,38 @@ namespace iota {
 	public:
 		RenderSurface();
 		RenderSurface(int x, int y, unsigned int width, unsigned int height);
-		//RenderSurface(Vector::Vec2<int> position, Vector::Vec2<unsigned int> size);
+		RenderSurface(Vector::Vec2<int> position, Vector::Vec2<unsigned int> size);
 		~RenderSurface();
 
-		//void SetPosition(Vector::Vec2<int> position);
+		void SetPosition(Vector::Vec2<int> position);
 		void SetPosition(int x, int y);
 		void Resize(unsigned int width, unsigned int height);
-		//void Resize(Vector::Vec2<unsigned int> size);
+		void Resize(Vector::Vec2<unsigned int> size);
 
 		SDL_Rect* data() const;
+	};
+
+	class Renderer {
+	private:
+		SDL_Renderer* renderer;
+		friend class Window;
+
+	public:
+		Renderer();
+		Renderer(Window& win);
+		Renderer(Window& win, bool points);
+		~Renderer();
+
+		bool Create(Window& win);
+		void Destroy();
+
+		void SetDrawColor(Color color);
+
+		void RenderTexture(Texture& texture);
+		void RenderTexture(Texture& texture, RenderSurface& surface);
+
+		void DrawRectangle(Basic::DrawMode mode, RenderSurface& surface);
+
+		SDL_Renderer* data() const;
 	};
 } // namespace iota
