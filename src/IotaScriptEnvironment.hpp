@@ -4,6 +4,7 @@
 
 #include <sol/sol.hpp>
 #include <string>
+#include <vector>
 #include <exception>
 
 namespace iota {

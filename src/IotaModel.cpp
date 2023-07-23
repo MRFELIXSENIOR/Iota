@@ -1,38 +1,71 @@
 #include "IotaModel.hpp"
 #include "IotaVector.hpp"
 #include "IotaScriptEnvironment.hpp"
+#include "IotaBasic.hpp"
 #include "IotaApplication.hpp"
 
 #include <SDL.h>
 
 using namespace iota;
 
-Object::Object(): pos_x(Application::GetWindow().GetCenterX() - 20), pos_y(Application::GetWindow().GetCenterY() - 20), width(40), height(40), GameInstance::Instance() {}
-Object::Object(Vector::Vec2<int> pos, Vector::Vec2<unsigned int> size): pos_x(pos.x), pos_y(pos.y), width(size.x), height(size.y), GameInstance::Instance() {}
-Object::Object(int x, int y, unsigned int w, unsigned int h) : pos_x(x), pos_y(y), width(w), height(h), GameInstance::Instance() {}
+Object::Object(): shape(ObjectShape::RECTANGLE), GameInstance::Instance() {
+	rs.width() = 100;
+	rs.height() = 100;
+
+	rs.x() = Application::GetWindow().GetCenterX() - (rs.width() / 2);
+	rs.y() = Application::GetWindow().GetCenterY() - (rs.height() / 2);
+}
+
+Object::Object(ObjectShape sh): shape(sh), GameInstance::Instance() {
+	rs.width() = 100;
+	rs.height() = 100;
+
+	rs.x() = Application::GetWindow().GetCenterX() - (rs.width() / 2);
+	rs.y() = Application::GetWindow().GetCenterY() - (rs.height() / 2);
+}
+Object::Object(Vector::Vec2<int> pos, Vector::Vec2<unsigned int> size, ObjectShape sh): shape(sh), GameInstance::Instance() {
+	rs.width() = size.x;
+	rs.height() = size.y;
+	
+	rs.x() = pos.x;
+	rs.y() = pos.y;
+}
+
+Object::Object(int x, int y, unsigned int w, unsigned int h, ObjectShape sh): shape(sh), GameInstance::Instance() {
+	rs.width() = w;
+	rs.height() = h;
+
+	rs.x() = x;
+	rs.y() = y;
+}
 Object::~Object() {}
 
-void Object::SetColor(Color c) { color = c; }
+void Object::SetColor(Color c) { rs.color = c; }
 void Object::SetColorRGB(uint8_t red, uint8_t green, uint8_t blue) {
-	color.red = red;
-	color.green = green;
-	color.blue = blue;
+	rs.color.red = red;
+	rs.color.green = green;
+	rs.color.blue = blue;
 }
 
-Color Object::GetColor() { return color; }
+Color Object::GetColor() { return rs.color; }
 
-void Object::Load() {
-	rs = RenderSurface(pos_x.data(), pos_y.data(), width.data(), height.data());
+void Object::SetX(int x) { rs.x() = x; }
+int Object::GetX() { return rs.x(); }
 
-	pos_x.GetValueChangedSignal().Connect([&](int oldvalue) { rs.SetPosition(pos_x.data(), pos_y.data()); });
-	pos_y.GetValueChangedSignal().Connect([&](int oldvalue) { rs.SetPosition(pos_x.data(), pos_y.data()); });
-	width.GetValueChangedSignal().Connect([&](unsigned int oldvalue) { rs.Resize(width.data(), height.data()); });
-	height.GetValueChangedSignal().Connect([&](unsigned int oldvalue) { rs.Resize(width.data(), height.data()); });
-}
+void Object::SetY(int y) { rs.y() = y; }
+int Object::GetY() { return rs.y(); }
+
+void Object::SetWidth(int width) { rs.width() = width; }
+int Object::GetWidth() { return rs.width(); }
+
+void Object::SetHeight(int height) { rs.height() = height; }
+int Object::GetHeight() { return rs.height(); }
+
+void Object::Load() {}
 
 void Object::Render() {
-	actor_renderer->SetDrawColor(color);
-	actor_renderer->DrawRectangle(Basic::DrawMode::OUTLINE, rs);
+	actor_renderer->SetDrawColor(rs.color);
+	actor_renderer->DrawCircle(Basic::DrawMode::FILL, rs);
 }
 
 void Object::Update() {}
@@ -40,17 +73,18 @@ void Object::Update() {}
 void Model::LoadLuaSTD() {
 	sol::state& lua = Lua::GetState();
 	sol::table& Iota = Lua::GetIota();
+	sol::table& Enum = Lua::GetEnum();
 
 	BindVectorType<int>();
 	BindVectorType<unsigned int>();
 	GameInstance::BindPropertyType<int>();
 	GameInstance::BindPropertyType<unsigned int>();
 
-	sol::usertype<Object> object = lua.new_usertype<Object>("Object", sol::constructors<Object(), Object(Vector::Vec2<int>, Vector::Vec2<unsigned int>), Object(int, int, unsigned int, unsigned int)>());
+	sol::usertype<Object> object = lua.new_usertype<Object>("Object", sol::constructors<Object(), Object(ObjectShape), Object(Vector::Vec2<int>, Vector::Vec2<unsigned int>, ObjectShape), Object(int, int, unsigned int, unsigned int, ObjectShape)>());
 	object["Color"] = sol::property(&Object::GetColor, &Object::SetColor);
 	object["SetColorRGB"] = &Object::SetColorRGB;
-	object["x"] = &Object::pos_x;
-	object["y"] = &Object::pos_y;
-	object["width"] = &Object::width;
-	object["height"] = &Object::height;
+	object["x"] = sol::property(&Object::GetX, &Object::SetY);
+	object["y"] = sol::property(&Object::GetY, &Object::SetY);
+	object["width"] = sol::property(&Object::GetWidth, &Object::SetWidth);
+	object["height"] = sol::property(&Object::GetHeight, &Object::SetHeight);
 }

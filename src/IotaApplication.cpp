@@ -10,8 +10,10 @@
 #include <thread>
 #include <mutex>
 
-#include "SDL.h"
-#include "SDL_image.h"
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 using namespace iota;
 using namespace Application;
@@ -29,14 +31,26 @@ bool Application::IsRunning() { return app_running; }
 
 bool Application::Initialize(const std::string& window_title, int window_width, int window_height) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-		Application::Panic("SDL Initialization Failure");
+		Application::Panic("SDL Initialization Failure", SDL_GetError());
 		return false;
 	}
 
-	if (!(IMG_Init(IMG_INIT_PNG))) {
-		Application::Panic("SDL_Image Initialization Failure");
+	if (IMG_Init(IMG_INIT_PNG) < 0) {
+		Application::Panic("SDL_Image Initialization Failure", IMG_GetError());
 		return false;
 	}
+
+	if (TTF_Init() < 0) {
+		Application::Panic("SDL_ttf Initialization Failure", TTF_GetError());
+		return false;
+	}
+
+	if (Mix_Init(MIX_INIT_OGG) < 0) {
+		Application::Panic("SDL_mixer Initialization Failure", Mix_GetError());
+		return false;
+	}
+
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
 	app_window.Create(window_title, window_width, window_height);
 	app_renderer.Create(app_window);
@@ -52,6 +66,30 @@ bool Application::Exit() {
 
 	IMG_Quit();
 	SDL_Quit();
+	Lua::GetEnum().clear();
+	Lua::GetIota().clear();
+
+	std::vector<std::string> usertypes = {
+		//default UserTypes
+		"Vector2",
+		"ScriptSignal",
+		"Property",
+		"Texture",
+		"Object",
+		"Color",
+		"RenderSurface",
+		"Window",
+		"Renderer"
+	};
+
+
+	for (const std::string& name : usertypes) {
+		Lua::GetState().set(name, sol::nil);
+	}
+
+	Lua::GetState().collect_garbage();
+
+	std::cout << "Exiting...\n";
 	app_running = false;
 	return true;
 }
@@ -69,7 +107,7 @@ void Application::Start() {
 
 	SDL_RaiseWindow(app_window.data());
 
-	const Basic::ActorMap& actor_map = Basic::GetActorMap();
+	ActorMap& actor_map = GetActorMap();
 	for (auto& a : actor_map) {
 		a.second->Load();
 	}

@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <SDL.h>
+#include <SDL2_gfxPrimitives.h>
 
 using namespace iota;
 using namespace Basic;
@@ -89,6 +90,41 @@ void Renderer::DrawRectangle(DrawMode mode, RenderSurface& surface) {
 	}
 }
 
+void Renderer::DrawTriangle(DrawMode mode, RenderSurface& surface) {
+}
+
+int RoundToMultipleOfEight(int i) {
+	return (i + (8 - 1)) & -8;
+}
+
+void Renderer::DrawCircle(DrawMode mode, RenderSurface& surface) {
+	switch (mode) {
+	case DrawMode::FILL:
+		filledCircleRGBA(renderer, (short)surface.x(), (short)surface.y(), surface.height() / 2, 0xFF, 0xFF, 0xFF, 0xFF);
+		break;
+
+	case DrawMode::OUTLINE:
+		circleRGBA(renderer, (short)surface.x(), (short)surface.y(), surface.height() / 2, 0xFF, 0xFF, 0xFF, 0xFF);
+		break;
+	}
+}
+
+void Renderer::Draw(ObjectShape shape, DrawMode mode, RenderSurface& surface) {
+	switch (shape) {
+	case ObjectShape::RECTANGLE:
+		DrawRectangle(mode, surface);
+		break;
+
+	case ObjectShape::TRIANGLE:
+		DrawTriangle(mode, surface);
+		break;
+
+	case ObjectShape::CIRCLE:
+		DrawCircle(mode, surface);
+		break;
+	}
+}
+
 void Renderer::Destroy() {
 	SDL_DestroyRenderer(renderer);
 }
@@ -100,7 +136,7 @@ Window::Window(std::string window_title, unsigned int window_width,
 	unsigned int window_height) {
 	window = SDL_CreateWindow(
 		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
+		window_width, window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if (!window) {
 		Application::Error("Failed To Create Window!", SDL_GetError());
 	}
@@ -202,18 +238,26 @@ sol::table GetCenter(Window& self) {
 
 void Basic::LoadLuaSTD() {
 	if (Application::IsInitialized()) return;
-	sol::state& lua = Lua::GetState();
+	sol::state_view lua = Lua::GetState();
 	sol::table& Iota = Lua::GetIota();
+	sol::table& Enum = Lua::GetEnum();
 
-	sol::usertype<Color> color = lua.new_usertype<Color>("Color", sol::constructors<Color(), Color(uint8_t, uint8_t, uint8_t, uint8_t)>());
-	Iota["Util"]["GetColor"] = &GetColor;
+	sol::usertype<Color> color = lua.new_usertype<Color>(
+		"Color",
+		sol::constructors<Color(), Color(uint8_t, uint8_t, uint8_t, uint8_t)>()
+	);
+	color["Red"] = &Color::red;
+	color["Green"] = &Color::green;
+	color["Blue"] = &Color::blue;
+	color["Alpha"] = &Color::alpha;
+
 
 	sol::usertype<Window> window = lua.new_usertype<Window>("Window", sol::constructors<Window(), Window(std::string, unsigned int, unsigned int)>());
 	window["Create"] = &Window::Create;
 	window["Destroy"] = &Window::Destroy;
 	window["GetCenter"] = &GetCenter;
 
-	sol::usertype<Renderer> renderer = lua.new_usertype<Renderer>("Renderer", sol::constructors<Renderer(Window&)>());
+	sol::usertype<Renderer> renderer = lua.new_usertype<Renderer>("Renderer", sol::constructors<Renderer(Window&), Renderer(Window&, bool)>());
 
 	sol::usertype<RenderSurface> surface = lua.new_usertype<RenderSurface>(
 		"RenderSurface",
@@ -232,4 +276,10 @@ void Basic::LoadLuaSTD() {
 		static_cast<void (RenderSurface::*)(Vector::Vec2<unsigned int>)>(&RenderSurface::Resize),
 		static_cast<void (RenderSurface::*)(unsigned int, unsigned int)>(&RenderSurface::Resize)
 	));
+
+	Enum["Shape"] = lua.create_table();
+
+	Enum["Shape"]["Rectangle"] = ObjectShape::RECTANGLE;
+	Enum["Shape"]["Circle"] = ObjectShape::CIRCLE;
+	Enum["Shape"]["Triangle"] = ObjectShape::TRIANGLE;
 }

@@ -26,6 +26,11 @@ namespace iota {
 		void LoadLuaSTD();
 	};
 
+	enum class ObjectShape {
+		RECTANGLE,
+		TRIANGLE,
+		CIRCLE
+	};
 
 	struct Color final {
 		uint8_t red, green, blue, alpha;
@@ -37,6 +42,7 @@ namespace iota {
 	};
 
 	Color GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 0xFF);
+
 
 
 	class Window {
@@ -76,6 +82,13 @@ namespace iota {
 		void Resize(Vector::Vec2<unsigned int> size);
 
 		SDL_Rect* data() const;
+
+		int& x() { return rect->x; }
+		int& y() { return rect->y; }
+		int& width() { return rect->w; }
+		int& height() { return rect->h; }
+
+		Color color;
 	};
 
 	class Renderer {
@@ -98,6 +111,10 @@ namespace iota {
 		void RenderTexture(Texture& texture, RenderSurface& surface);
 
 		void DrawRectangle(Basic::DrawMode mode, RenderSurface& surface);
+		void DrawTriangle(Basic::DrawMode mode, RenderSurface& surface);
+		void DrawCircle(Basic::DrawMode mode, RenderSurface& surface);
+
+		void Draw(ObjectShape shape, Basic::DrawMode mode, RenderSurface& surface);
 
 		SDL_Renderer* data() const;
 	};

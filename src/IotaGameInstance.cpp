@@ -3,29 +3,16 @@
 #include "IotaScriptEnvironment.hpp"
 #include "IotaEvent.hpp"
 #include "IotaBasic.hpp"
+#include "IotaBehavior.hpp"
 
 #include <map>
 
 using namespace iota;
 using namespace GameInstance;
 
-static Basic::ActorMap actor_map;
-static uint64_t inst_id;
+uint64_t GameBehavior::GetID() { return id; }
 
-const Basic::ActorMap& Basic::GetActorMap() { return actor_map; }
-
-uint64_t Basic::GameBehavior::GetID() { return id; }
-
-Instance::Instance() {
-	if (SDL_GetKeyboardFocus()) {
-		actor_window = std::make_unique<Window>(SDL_GetKeyboardFocus());
-		actor_renderer = std::make_unique<Renderer>(*actor_window, true);
-		id = inst_id++;
-	}
-
-	auto&& a = std::make_pair(id, static_cast<Basic::GameBehavior*>(this));
-	actor_map.insert(a);
-}
+Instance::Instance(): GameBehavior() {}
 
 Instance::~Instance() {}
 

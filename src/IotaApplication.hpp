@@ -21,6 +21,5 @@ namespace iota {
 		bool IsInitialized();
 
 		void SetFrameLimit(unsigned int target);
-#define CheckApplication() if (Application::IsInitialized()) return;
 	}; // namespace Application
 }; // namespace iota
