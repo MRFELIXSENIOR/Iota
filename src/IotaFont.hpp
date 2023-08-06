@@ -3,10 +3,12 @@
 #include "IotaBehavior.hpp"
 
 #include <string>
-#include <vector>
+#include <unordered_map>
 #include <SDL_ttf.h>
 
 namespace iota {
+	class RenderSurface;
+
 	enum class FontSize {
 		SMALL = 12,
 		MEDIUM = 18,
@@ -15,7 +17,7 @@ namespace iota {
 
 	class Font : protected GameBehavior {
 	private:
-		std::vector<std::string> str_container;
+		std::unordered_map<RenderSurface, std::string> str_container;
 		Color color;
 		TTF_Font* font;
 
@@ -26,9 +28,7 @@ namespace iota {
 		~Font();
 
 		void Resize(FontSize size);
-		void RenderText(const std::string& str);
-
-		void SetColor(Color color);
+		void RenderText(RenderSurface& surface, const std::string& str);
 
 		void Load() override;
 		void Render() override;

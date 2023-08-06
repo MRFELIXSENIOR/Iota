@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 
+#include "IotaEvent.hpp"
+
 namespace iota {
 	namespace Keyboard {
 		enum class KeyCode {
@@ -263,7 +265,9 @@ namespace iota {
 		const std::map<SDL_Scancode, KeyCode>& GetKeyEntries();
 		const std::map<KeyCode, std::string>& GetKeystringEntries();
 
-		void LoadLuaSTD();
+		Event::EventSignal<KeyCode>& GetKeydownEvent();
+		Event::EventSignal<KeyCode>& GetKeyupEvent();
+
 		void HandleKeyEvent(SDL_Scancode scancode, KeyState state);
 
 		bool IsKeyDown(KeyCode key);

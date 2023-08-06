@@ -74,7 +74,7 @@ void Renderer::RenderTexture(Texture& texture) {
 }
 
 void Renderer::RenderTexture(Texture& texture, RenderSurface& surface) {
-	SDL_RenderCopy(renderer, texture.data(), NULL, surface.data());
+	SDL_RenderCopy(renderer, texture.data(), NULL, surface.data_rect());
 }
 
 // Models
@@ -82,11 +82,11 @@ void Renderer::RenderTexture(Texture& texture, RenderSurface& surface) {
 void Renderer::DrawRectangle(DrawMode mode, RenderSurface& surface) {
 	switch (mode) {
 	case DrawMode::FILL:
-		SDL_RenderFillRect(renderer, surface.data());
+		SDL_RenderFillRect(renderer, surface.data_rect());
 		break;
 
 	case DrawMode::OUTLINE:
-		SDL_RenderDrawRect(renderer, surface.data());
+		SDL_RenderDrawRect(renderer, surface.data_rect());
 	}
 }
 
@@ -184,13 +184,21 @@ int Window::GetCenterY() {
 	return y / 2;
 }
 
-RenderSurface::RenderSurface() : rect(new SDL_Rect) {}
+int Window::GetRelativeCenterX(int size_x) {
+	return GetCenterX() - (size_x / 2);
+}
+
+int Window::GetRelativeCenterY(int size_y) {
+	return GetCenterY() - (size_y / 2);
+}
+
 RenderSurface::RenderSurface(int x, int y, unsigned int width, unsigned int height) :
 	rect(new SDL_Rect) {
 	rect->x = x;
 	rect->y = y;
 	rect->w = width;
 	rect->h = height;
+	suf = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
 }
 
 RenderSurface::RenderSurface(Vector::Vec2<int> position, Vector::Vec2<unsigned int> size) :
@@ -199,6 +207,7 @@ RenderSurface::RenderSurface(Vector::Vec2<int> position, Vector::Vec2<unsigned i
 	rect->y = position.y;
 	rect->w = size.x;
 	rect->h = size.y;
+	suf = SDL_CreateRGBSurface(0, size.x, size.y, 32, 0, 0, 0, 0);
 }
 
 RenderSurface::~RenderSurface() {}
@@ -223,63 +232,5 @@ void RenderSurface::Resize(unsigned int width, unsigned int height) {
 	rect->h = height;
 }
 
-SDL_Rect* RenderSurface::data() const { return rect; }
-
-sol::table GetCenter(Window& self) {
-	int x = self.GetCenterX();
-	int y = self.GetCenterY();
-
-	sol::table center = Lua::GetState().create_table();
-	center["x"] = x;
-	center["y"] = y;
-
-	return center;
-}
-
-void Basic::LoadLuaSTD() {
-	if (Application::IsInitialized()) return;
-	sol::state_view lua = Lua::GetState();
-	sol::table& Iota = Lua::GetIota();
-	sol::table& Enum = Lua::GetEnum();
-
-	sol::usertype<Color> color = lua.new_usertype<Color>(
-		"Color",
-		sol::constructors<Color(), Color(uint8_t, uint8_t, uint8_t, uint8_t)>()
-	);
-	color["Red"] = &Color::red;
-	color["Green"] = &Color::green;
-	color["Blue"] = &Color::blue;
-	color["Alpha"] = &Color::alpha;
-
-
-	sol::usertype<Window> window = lua.new_usertype<Window>("Window", sol::constructors<Window(), Window(std::string, unsigned int, unsigned int)>());
-	window["Create"] = &Window::Create;
-	window["Destroy"] = &Window::Destroy;
-	window["GetCenter"] = &GetCenter;
-
-	sol::usertype<Renderer> renderer = lua.new_usertype<Renderer>("Renderer", sol::constructors<Renderer(Window&), Renderer(Window&, bool)>());
-
-	sol::usertype<RenderSurface> surface = lua.new_usertype<RenderSurface>(
-		"RenderSurface",
-		sol::constructors<RenderSurface(), RenderSurface(int, int, unsigned int, unsigned int), RenderSurface(Vector::Vec2<int>, Vector::Vec2<unsigned int>)>()
-	);
-
-	BindVectorType<int>();
-	BindVectorType<unsigned int>();
-
-	surface.set_function("SetPosition", sol::overload(
-		static_cast<void (RenderSurface::*)(Vector::Vec2<int>)>(&RenderSurface::SetPosition),
-		static_cast<void (RenderSurface::*)(int, int)>(&RenderSurface::SetPosition)
-	));
-
-	surface.set_function("Resize", sol::overload(
-		static_cast<void (RenderSurface::*)(Vector::Vec2<unsigned int>)>(&RenderSurface::Resize),
-		static_cast<void (RenderSurface::*)(unsigned int, unsigned int)>(&RenderSurface::Resize)
-	));
-
-	Enum["Shape"] = lua.create_table();
-
-	Enum["Shape"]["Rectangle"] = ObjectShape::RECTANGLE;
-	Enum["Shape"]["Circle"] = ObjectShape::CIRCLE;
-	Enum["Shape"]["Triangle"] = ObjectShape::TRIANGLE;
-}
+SDL_Rect* RenderSurface::data_rect() const { return rect; }
+SDL_Surface* RenderSurface::data_suf() const { return suf; }

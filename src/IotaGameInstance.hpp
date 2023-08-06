@@ -22,6 +22,8 @@ namespace iota {
 	};
 
 	namespace GameInstance {
+		class Instance;
+
 		template <typename T>
 		struct Property {
 		private:
@@ -46,8 +48,6 @@ namespace iota {
 
 		template<typename T, typename P>
 		concept IsProperty = std::is_base_of_v<Property<P>, T>;
-
-		class Instance;
 
 		template <typename T>
 		concept IsInstance = std::is_base_of_v<Instance, T>;
@@ -75,19 +75,24 @@ namespace iota {
 			virtual void Render();
 			virtual void Update();
 
-			template <IsInstance T> 
+			template <IsInstance T>
 			void SetParent(T& p) {
 				Instance* p_new = static_cast<Instance*>(&p);
 
-				parent_changed.Fire(p_new);
+				parent_changed.Fire(*p_new);
 				parent = p_new;
+			}
+
+			template <IsInstance T>
+			T& GetParent() {
+				return *dynamic_cast<T*>(parent);
 			}
 
 			template <IsInstance T>
 			void AddChildren(T& c) {
 				Instance* c_new = static_cast<Instance*>(&c);
 
-				child_added.Fire(c_new);
+				child_added.Fire(*c_new);
 
 				auto&& pair = std::make_pair(&typeid(T), c_new);
 				children.insert(pair);
@@ -115,8 +120,8 @@ namespace iota {
 				return std::nullopt;
 			}
 
-			Event::EventSignal<Instance*> parent_changed;
-			Event::EventSignal<Instance*> child_added;
+			Event::EventSignal<Instance&> parent_changed;
+			Event::EventSignal<Instance&> child_added;
 
 		private:
 			std::vector<Lua::Script*> attached_scripts;
@@ -126,19 +131,5 @@ namespace iota {
 			std::unordered_multimap<std::type_info*, Instance*, type_info_hash, type_info_compare_equal> children;
 		};
 
-		template <typename T>
-		sol::usertype<Property<T>> BindPropertyType() {
-			sol::state& lua = Lua::GetState();
-
-			sol::usertype<Property<T>> property = lua.new_usertype<Property<T>>("Property", sol::no_constructor);
-			property["Value"] = sol::property(&Property<T>::data, &Property<T>::set);
-			property.set("Name", sol::readonly(&Property<T>::property_name));
-
-			Event::BindScriptSignalType<T>();
-
-			return property;
-		}
-
-		void LoadLuaSTD();
 	} // namespace GameInstance
 } // namespace iota

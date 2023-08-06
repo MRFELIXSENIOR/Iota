@@ -13,17 +13,10 @@ namespace iota {
 	class RenderSurface;
 
 	namespace Basic {
-		enum class RenderingContext {
-			TO_SCREEN,
-			TO_RS,
-		};
-
 		enum class DrawMode {
 			FILL,
 			OUTLINE,
 		};
-
-		void LoadLuaSTD();
 	};
 
 	enum class ObjectShape {
@@ -43,8 +36,6 @@ namespace iota {
 
 	Color GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 0xFF);
 
-
-
 	class Window {
 	private:
 		SDL_Window* window;
@@ -63,15 +54,21 @@ namespace iota {
 		int GetCenterX();
 		int GetCenterY();
 
+		/*
+		size: Size in 2d either width or height
+		*/
+		int GetRelativeCenterX(int size_x);
+		int GetRelativeCenterY(int size_y);
+
 		SDL_Window* data() const;
 	};
 
-	struct RenderSurface final {
+	struct RenderSurface {
 	private:
 		SDL_Rect* rect;
+		SDL_Surface* suf;
 
 	public:
-		RenderSurface();
 		RenderSurface(int x, int y, unsigned int width, unsigned int height);
 		RenderSurface(Vector::Vec2<int> position, Vector::Vec2<unsigned int> size);
 		~RenderSurface();
@@ -81,7 +78,8 @@ namespace iota {
 		void Resize(unsigned int width, unsigned int height);
 		void Resize(Vector::Vec2<unsigned int> size);
 
-		SDL_Rect* data() const;
+		SDL_Rect* data_rect() const;
+		SDL_Surface* data_suf() const;
 
 		int& x() { return rect->x; }
 		int& y() { return rect->y; }

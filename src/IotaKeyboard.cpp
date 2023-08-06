@@ -504,6 +504,9 @@ static std::map<KeyCode, std::string> KeystringEntries = {
 static Event::EventSignal<KeyCode> keydown_event;
 static Event::EventSignal<KeyCode> keyup_event;
 
+Event::EventSignal<KeyCode>& Keyboard::GetKeydownEvent() { return keydown_event; }
+Event::EventSignal<KeyCode>& Keyboard::GetKeyupEvent() { return keyup_event; }
+
 static std::vector<KeyCode> keys_up;
 static std::vector<KeyCode> keys_down;
 
@@ -523,30 +526,6 @@ KeyCode Keyboard::GetKey(SDL_Scancode scancode) {
 
 const std::map<SDL_Scancode, KeyCode>& Keyboard::GetKeyEntries() { return KeyCodeEntries; }
 const std::map<KeyCode, std::string>& Keyboard::GetKeystringEntries() { return KeystringEntries; }
-
-void Keyboard::LoadLuaSTD() {
-	sol::table& Iota = Lua::GetIota();
-	sol::table& Enum = Lua::GetEnum();
-	sol::state& lua = Lua::GetState();
-
-	Event::BindScriptSignalType<KeyCode>();
-
-	Iota["Input"] = lua.create_table();
-	Iota["Input"]["OnKeyDown"] = &keydown_event;
-	Iota["Input"]["OnKeyRelease"] = &keyup_event;
-
-	Iota["Input"]["IsKeyDown"] = &IsKeyDown;
-	Iota["Input"]["IsKeyRelease"] = &IsKeyReleased;
-
-	Enum["KeyCode"] = lua.create_table();
-	for (auto& k : Keyboard::GetKeyEntries()) {
-		Enum["KeyCode"][GetKeystringEntries().at(k.second)] = (int)k.first;
-	}
-
-	Iota["Util"]["ConvertKeyCode"] = [&](KeyCode key) {
-		return GetKeystringEntries().at(key);
-	};
-}
 
 bool Keyboard::IsKeyDown(KeyCode key) {
 	auto it = std::find(keys_down.begin(), keys_down.end(), key);

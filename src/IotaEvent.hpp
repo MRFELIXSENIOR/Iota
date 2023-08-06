@@ -1,16 +1,19 @@
 #pragma once
 
 #include <sigslot/signal.hpp>
-#include <sol/sol.hpp>
+
+#include <concepts>
+#include <type_traits>
 
 namespace iota {
-	namespace Lua {
-		sol::state& GetState();
-	};
-
 	namespace Event {
+		template <typename T, typename... Args>
+		concept IsCallable = requires(T t, Args... args) {
+			{ t(args...) } -> std::same_as<void>;
+		};
+
 		template <typename... Args> class EventSignal {
-		private:
+		protected:
 			sigslot::signal<Args...> signal;
 
 		public:
@@ -20,7 +23,8 @@ namespace iota {
 
 			~EventSignal() {}
 
-			void Connect(std::function<void(Args...)> fn) {
+			template <IsCallable<Args...> T>
+			void Connect(T fn) {
 				signal.connect(fn);
 			}
 
@@ -29,17 +33,5 @@ namespace iota {
 		};
 
 		void PollEvent();
-		void LoadLuaSTD();
-
-		template <typename... Args>
-		sol::usertype<Event::EventSignal<Args...>> BindScriptSignalType() {
-			sol::state& lua = Lua::GetState();
-
-			sol::usertype<Event::EventSignal<Args...>> script_signal = lua.new_usertype<Event::EventSignal<Args...>>("ScriptSignal", sol::no_constructor);
-			script_signal["Connect"] = &Event::EventSignal<Args...>::Connect;
-			script_signal["Disconnect"] = &Event::EventSignal<Args...>::Disconnect;
-
-			return script_signal;
-		}
 	}; // namespace Event
 }; // namespace iota

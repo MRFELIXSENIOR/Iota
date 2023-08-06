@@ -4,49 +4,40 @@
 #include "IotaBasic.hpp"
 #include "IotaVector.hpp"
 
-namespace iota {
-	class Object : GameInstance::Instance {
-	private:
-		RenderSurface rs;
-		ObjectShape shape;
+#include "IotaDefs.hpp"
 
+namespace iota {
+	class Object : GameInstance::Instance, public RenderSurface {
 	public:
 		Object();
 		Object(ObjectShape sh);
-		Object(Vector::Vec2<int> pos, Vector::Vec2<unsigned int> size, ObjectShape shape);
-		Object(int x, int y, unsigned int w, unsigned int h, ObjectShape shape);
+		Object(Vector::Vec2<PosType> pos, Vector::Vec2<SizeType> size);
+		Object(Vector::Vec2<PosType> pos, Vector::Vec2<SizeType> size, ObjectShape shape);
+		Object(PosType x, PosType y, SizeType w, SizeType h);
+		Object(PosType x, PosType y, SizeType w, SizeType h, ObjectShape shape);
 		~Object();
 
 		void SetColor(Color c);
 		void SetColorRGB(uint8_t red, uint8_t green, uint8_t blue);
 		Color GetColor();
 
-		void SetX(int x);
-		int GetX();
-
-		void SetY(int y);
-		int GetY();
-
-		void SetWidth(int width);
-		int GetWidth();
-
-		void SetHeight(int height);
-		int GetHeight();
+		void SetX(PosType pos_x);
+		void SetY(PosType pos_y);
+		void SetWidth(PosType w);
+		void SetHeight(PosType h);
 
 		void Load() override;
 		void Render() override;
 		void Update() override;
+
+		ObjectShape shape;
 	};
 
-	class GUIObject : GameInstance::Instance {
-	private:
-		RenderSurface rs;
-
+	class GUIObject : GameInstance::Instance, RenderSurface {
 	public:
-
+		GUIObject();
+		GUIObject(PosType x, PosType y, SizeType w, SizeType h);
+		GUIObject(Vector::Vec2<PosType> pos, Vector::Vec2<SizeType> size);
+		~GUIObject();
 	};
-
-	namespace Model {
-		void LoadLuaSTD();
-	}
 }; // namespace iota

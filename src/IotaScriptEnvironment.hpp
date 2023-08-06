@@ -34,12 +34,7 @@ namespace iota {
 		};
 
 		void LoadSTD();
-
-		sol::state& GetState();
-
-		sol::table& GetIota();
-		sol::table& GetEnum();
-
+		void Clean();
 		void RunAllScript();
 	};
 };

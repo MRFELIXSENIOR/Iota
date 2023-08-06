@@ -39,12 +39,4 @@ void Texture::LoadLuaSTD() {
 	sol::state& lua = Lua::GetState();
 	sol::table& Iota = Lua::GetIota();
 
-	sol::usertype<Texture> texture = lua.new_usertype<Texture>(
-		"Texture",
-		sol::constructors<Texture()>());
-
-	texture.set_function("LoadTexture", sol::overload(
-		static_cast<Texture& (Texture::*)(const std::string&)>(&Texture::LoadTexture),
-		static_cast<Texture& (Texture::*)(const std::string&, Renderer&)>(&Texture::LoadTexture)
-	));
-}
+	}

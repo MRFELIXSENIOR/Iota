@@ -25,3 +25,5 @@ GameBehavior::GameBehavior() {
 	auto&& a = std::make_pair(id, static_cast<GameBehavior*>(this));
 	GetActorMap().insert(a);
 }
+
+GameBehavior::~GameBehavior() {}

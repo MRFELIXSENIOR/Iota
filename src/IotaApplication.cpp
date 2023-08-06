@@ -30,6 +30,7 @@ bool Application::IsInitialized() { return app_initialized; }
 bool Application::IsRunning() { return app_running; }
 
 bool Application::Initialize(const std::string& window_title, int window_width, int window_height) {
+#define SOL_ALL_SAFETIES_ON 1
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		Application::Panic("SDL Initialization Failure", SDL_GetError());
 		return false;
@@ -66,29 +67,8 @@ bool Application::Exit() {
 
 	IMG_Quit();
 	SDL_Quit();
-	Lua::GetEnum().clear();
-	Lua::GetIota().clear();
-
-	std::vector<std::string> usertypes = {
-		//default UserTypes
-		"Vector2",
-		"ScriptSignal",
-		"Property",
-		"Texture",
-		"Object",
-		"Color",
-		"RenderSurface",
-		"Window",
-		"Renderer"
-	};
-
-
-	for (const std::string& name : usertypes) {
-		Lua::GetState().set(name, sol::nil);
-	}
-
-	Lua::GetState().collect_garbage();
-
+	Lua::Clean();
+	
 	std::cout << "Exiting...\n";
 	app_running = false;
 	return true;

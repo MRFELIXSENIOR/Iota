@@ -3,9 +3,10 @@
 #include <map>
 #include <memory>
 
-#include "IotaBasic.hpp"
-
 namespace iota {
+	class Window;
+	class Renderer;
+
 	struct GameBehavior {
 	protected:
 		std::unique_ptr<Window> actor_window;
@@ -14,6 +15,7 @@ namespace iota {
 		uint64_t id;
 
 		GameBehavior();
+		~GameBehavior();
 
 	public:
 		virtual void Load() = 0;

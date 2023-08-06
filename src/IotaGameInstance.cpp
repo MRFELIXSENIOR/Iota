@@ -19,17 +19,3 @@ Instance::~Instance() {}
 void Instance::Load() {}
 void Instance::Render() {}
 void Instance::Update() {}
-
-void GameInstance::LoadLuaSTD() {
-	sol::state& lua = Lua::GetState();
-	sol::table& Iota = Lua::GetIota();
-
-	BindPropertyType<std::string>();
-
-	sol::usertype<Instance> instance = lua.new_usertype<Instance>(
-		"Instance",
-		sol::constructors<Instance()>()
-	);
-
-	instance["Name"] = &Instance::name;
-}

@@ -1,4 +1,5 @@
 #include "IotaFont.hpp"
+#include "IotaBasic.hpp"
 
 #include <SDL_ttf.h>
 
@@ -20,18 +21,15 @@ void Font::Resize(FontSize size) {
 	TTF_SetFontSize(font, (int)size);
 }
 
-void Font::RenderText(const std::string& str) {
-	str_container.push_back(str);
-}
-
-void Font::SetColor(Color c) {
-	color = c;
+void Font::RenderText(RenderSurface& surface, const std::string& str) {
+	auto&& pair = std::make_pair(surface, str);
+	str_container.insert(pair);
 }
 
 void Font::Load() {}
 void Font::Render() {
-	for (const std::string& s : str_container) {
-		TTF_RenderUTF8_Solid(font, s.data(), color.data());
+	for (auto& s : str_container) {
+
 	}
 }
 
