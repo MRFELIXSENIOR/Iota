@@ -2,7 +2,7 @@
 #include "IotaException.hpp"
 #include "IotaTexture.hpp"
 #include "IotaApplication.hpp"
-#include "IotaScriptEnvironment.hpp"
+#include "IotaDefs.hpp"
 
 #include <vector>
 #include <SDL.h>
@@ -11,27 +11,16 @@
 using namespace iota;
 using namespace Basic;
 
-Color::Color() : red(0), green(0), blue(0), alpha(0) {}
-Color::~Color() {}
-Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : red(r), green(g), blue(b), alpha() {}
-SDL_Color Color::data() const {
-	SDL_Color c = { red, green, blue, alpha };
-	return c;
-}
-
-Color iota::GetColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
-	return Color(red, green, blue, alpha);
-}
-
 Renderer::Renderer() {}
 Renderer::Renderer(Window& win) {
 	if (!win.data()) {
-		Application::Error("Cannot Create Renderer with Uninitialized Window");
+		Application::Throw(ErrorType::ERROR, "Cannot Create Renderer with Uninitialized Window");
 	}
 	else {
 		renderer = SDL_CreateRenderer(win.data(), -1, SDL_RENDERER_ACCELERATED);
 		if (!renderer) {
-			Application::Error(
+			Application::Throw(
+				ErrorType::ERROR,
 				"Failed To Create Renderer!",
 				SDL_GetError());
 		}
@@ -39,7 +28,7 @@ Renderer::Renderer(Window& win) {
 }
 Renderer::Renderer(Window& win, bool points) {
 	if (!win.data() || !SDL_GetRenderer(win.data())) {
-		Application::Error("Failed To Create A Renderer With Null Window or Renderer Associated Is Null");
+		Application::Throw(ErrorType::ERROR, "Failed To Create A Renderer With Null Window or Renderer Associated Is Null");
 	}
 	else {
 		if (points) {
@@ -51,13 +40,14 @@ Renderer::~Renderer() { Destroy(); }
 
 bool Renderer::Create(Window& win) {
 	if (!win.window) {
-		Application::Error("Cannot Create Renderer with Uninitialized Window");
+		Application::Throw(ErrorType::ERROR, "Cannot Create Renderer with Uninitialized Window");
 		return false;
 	}
 
 	renderer = SDL_CreateRenderer(win.window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
-		Application::Error(
+		Application::Throw(
+			ErrorType::ERROR,
 			"Failed To Create Renderer!",
 			SDL_GetError());
 		return false;
@@ -138,12 +128,12 @@ Window::Window(std::string window_title, unsigned int window_width,
 		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		window_width, window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if (!window) {
-		Application::Error("Failed To Create Window!", SDL_GetError());
+		Application::Throw(ErrorType::ERROR, "Failed To Create Window!", SDL_GetError());
 	}
 }
 Window::Window(SDL_Window* win) {
 	if (!win) {
-		Application::Error("Failed To Create Window With A Null Window!");
+		Application::Throw(ErrorType::ERROR, "Failed To Create Window With A Null Window!");
 	}
 	else {
 		window = win;
@@ -159,7 +149,9 @@ bool Window::Create(std::string window_title, unsigned int window_width,
 		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
 	if (!window) {
-		Application::Error("Failed To Create Window!",
+		Application::Throw(
+			ErrorType::ERROR,
+			"Failed To Create Window!",
 			SDL_GetError());
 		return false;
 	}

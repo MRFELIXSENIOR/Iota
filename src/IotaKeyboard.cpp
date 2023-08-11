@@ -1,10 +1,8 @@
 #include "IotaKeyboard.hpp"
 #include "IotaEvent.hpp"
-#include "IotaScriptEnvironment.hpp"
 #include "IotaApplication.hpp"
 
 #include <vector>
-#include <sol/sol.hpp>
 
 using namespace iota;
 using namespace Keyboard;

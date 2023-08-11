@@ -6,11 +6,11 @@
 using namespace iota;
 
 Font::Font(const std::string& font_path): GameBehavior() {
-	font = TTF_OpenFont(font_path.data(), 18);
+	font = TTF_OpenFont(font_path.c_str(), 18);
 }
 
 Font::Font(const std::string& font_path, FontSize size): GameBehavior() {
-	font = TTF_OpenFont(font_path.data(), (int)size);
+	font = TTF_OpenFont(font_path.c_str(), (int)size);
 }
 
 Font::~Font() {
@@ -22,7 +22,7 @@ void Font::Resize(FontSize size) {
 }
 
 void Font::RenderText(RenderSurface& surface, const std::string& str) {
-	auto&& pair = std::make_pair(surface, str);
+	auto pair = std::make_pair(&surface, str);
 	str_container.insert(pair);
 }
 

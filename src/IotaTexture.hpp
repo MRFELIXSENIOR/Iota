@@ -25,6 +25,5 @@ namespace iota {
 
 		Texture& LoadTexture(const std::string& path);
 		Texture& LoadTexture(const std::string& path, Renderer& rdrer);
-		static void LoadLuaSTD();
 	};
 } // namespace iota

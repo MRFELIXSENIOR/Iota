@@ -1,6 +1,5 @@
 #include "IotaGameInstance.hpp"
 #include "IotaApplication.hpp"
-#include "IotaScriptEnvironment.hpp"
 #include "IotaEvent.hpp"
 #include "IotaBasic.hpp"
 #include "IotaBehavior.hpp"

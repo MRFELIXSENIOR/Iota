@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IotaBehavior.hpp"
+#include "IotaDefs.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -17,7 +18,7 @@ namespace iota {
 
 	class Font : protected GameBehavior {
 	private:
-		std::unordered_map<RenderSurface, std::string> str_container;
+		std::unordered_map<RenderSurface*, std::string> str_container;
 		Color color;
 		TTF_Font* font;
 

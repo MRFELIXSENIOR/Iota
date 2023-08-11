@@ -1,6 +1,5 @@
 #include "IotaModel.hpp"
 #include "IotaVector.hpp"
-#include "IotaScriptEnvironment.hpp"
 #include "IotaBasic.hpp"
 #include "IotaApplication.hpp"
 

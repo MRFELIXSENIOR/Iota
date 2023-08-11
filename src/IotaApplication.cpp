@@ -1,7 +1,7 @@
 #include "IotaApplication.hpp"
 #include "IotaException.hpp"
 #include "IotaBasic.hpp"
-#include "IotaScriptEnvironment.hpp"
+#include "IotaMono.hpp"
 #include "IotaEvent.hpp"
 #include "IotaTexture.hpp"
 
@@ -29,25 +29,25 @@ static int app_framelimit = 60;
 bool Application::IsInitialized() { return app_initialized; }
 bool Application::IsRunning() { return app_running; }
 
-bool Application::Initialize(const std::string& window_title, int window_width, int window_height) {
+bool Application::Initialize(const std::string& window_title, int window_width, int window_height, int argc, char** argv) {
 #define SOL_ALL_SAFETIES_ON 1
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-		Application::Panic("SDL Initialization Failure", SDL_GetError());
+		Application::Throw(ErrorType::RUNTIME_ERROR, "SDL Initialization Failure", SDL_GetError());
 		return false;
 	}
 
 	if (IMG_Init(IMG_INIT_PNG) < 0) {
-		Application::Panic("SDL_Image Initialization Failure", IMG_GetError());
+		Application::Throw(ErrorType::RUNTIME_ERROR, "SDL_Image Initialization Failure", IMG_GetError());
 		return false;
 	}
 
 	if (TTF_Init() < 0) {
-		Application::Panic("SDL_ttf Initialization Failure", TTF_GetError());
+		Application::Throw(ErrorType::RUNTIME_ERROR, "SDL_ttf Initialization Failure", TTF_GetError());
 		return false;
 	}
 
 	if (Mix_Init(MIX_INIT_OGG) < 0) {
-		Application::Panic("SDL_mixer Initialization Failure", Mix_GetError());
+		Application::Throw(ErrorType::RUNTIME_ERROR, "SDL_mixer Initialization Failure", Mix_GetError());
 		return false;
 	}
 
@@ -55,8 +55,14 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 
 	app_window.Create(window_title, window_width, window_height);
 	app_renderer.Create(app_window);
-	Lua::LoadSTD();
 	app_initialized = true;
+
+	std::vector<std::string> input;
+	for (int i = 1; i < argc; ++i) {
+		input.emplace_back(argv[i]);
+	}
+
+	SEnv::Initialize(input);
 
 	return true;
 }
@@ -67,8 +73,6 @@ bool Application::Exit() {
 
 	IMG_Quit();
 	SDL_Quit();
-	Lua::Clean();
-	
 	std::cout << "Exiting...\n";
 	app_running = false;
 	return true;
@@ -76,14 +80,13 @@ bool Application::Exit() {
 
 void Application::Start() {
 	if (app_initialized == false) {
-		Application::Panic("Application Is Not Initialized!");
+		Application::Throw(ErrorType::RUNTIME_ERROR, "Application Is Not Initialized!");
 		return;
 	}
 
 	app_running = true;
 	Uint32 framestart;
 	float frametime;
-	Lua::RunAllScript();
 
 	SDL_RaiseWindow(app_window.data());
 

@@ -7,4 +7,4 @@
 #include "IotaException.hpp"
 #include "IotaBasic.hpp"
 #include "IotaEvent.hpp"
-#include "IotaScriptEnvironment.hpp"
+#include "IotaDefs.hpp"

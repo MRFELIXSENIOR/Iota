@@ -6,20 +6,32 @@
 using namespace iota;
 using namespace Application;
 
-void Application::Error(const std::string& msg) {
-	std::cerr << "[IOTA] [Error!]\n[Message]: " << msg << '\n';
+void Application::Throw(ErrorType type, const std::string& msg) {
+	switch (type) {
+	case ErrorType::ERROR:
+		std::cerr << "[IOTA] [Error!]\n[Message]: " << msg << '\n';
+		throw Error(msg);
+		break;
+
+	case ErrorType::RUNTIME_ERROR:
+		std::cerr << "[IOTA] [Panic!]\n[Message]: " << msg << '\n';
+		throw RuntimeError(msg);
+		Exit();
+		break;
+	}
 }
 
-void Application::Error(const std::string& title, const std::string& msg) {
-	std::cerr << "[IOTA] [Error!]\n[Title]: " << title << '\n' << "[Message]: " << msg << '\n';
-}
+void Application::Throw(ErrorType type, const std::string& title, const std::string& msg) {
+	switch (type) {
+	case ErrorType::ERROR:
+		std::cerr << "[IOTA] [Error!]\n[Title]: " << title << '\n' << "[Message]: " << msg << '\n';
+		throw Error(msg);
+		break;
 
-void Application::Panic(const std::string& msg) {
-	std::cerr << "[IOTA] [Panic!]\n[Message]: " << msg << '\n';
-	Exit();
-}
-
-void Application::Panic(const std::string& title, const std::string& msg) {
-	std::cerr << "[IOTA] [Panic!]\n[Title]: " << title << '\n' << "[Message]: " << msg << '\n';
-	Exit();	
+	case ErrorType::RUNTIME_ERROR:
+		std::cerr << "[IOTA] [Panic!]\n[Title]: " << title << '\n' << "[Message]: " << msg << '\n';
+		Exit();
+		throw RuntimeError(msg);
+		break;
+	}
 }

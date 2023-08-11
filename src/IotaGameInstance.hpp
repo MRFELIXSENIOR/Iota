@@ -11,15 +11,10 @@
 #include <concepts>
 #include <typeinfo>
 #include <cstdint>
-#include <sol/sol.hpp>
 
 namespace iota {
 	class Renderer;
 	class Window;
-	namespace Lua {
-		struct Script;
-		sol::state& GetState();
-	};
 
 	namespace GameInstance {
 		class Instance;
@@ -124,12 +119,8 @@ namespace iota {
 			Event::EventSignal<Instance&> child_added;
 
 		private:
-			std::vector<Lua::Script*> attached_scripts;
-			friend class Lua::Script;
-
 			Instance* parent;
 			std::unordered_multimap<std::type_info*, Instance*, type_info_hash, type_info_compare_equal> children;
 		};
-
 	} // namespace GameInstance
 } // namespace iota

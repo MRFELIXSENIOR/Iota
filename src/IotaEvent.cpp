@@ -1,7 +1,6 @@
 #include "IotaEvent.hpp"
 #include "IotaApplication.hpp"
 #include "IotaKeyboard.hpp"
-#include "IotaScriptEnvironment.hpp"
 
 #include <iostream>
 

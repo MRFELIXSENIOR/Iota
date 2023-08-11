@@ -1,12 +1,9 @@
 #include "IotaBehavior.hpp"
 #include "IotaApplication.hpp"
-#include "IotaScriptEnvironment.hpp"
 #include "IotaBasic.hpp"
 
 #include <SDL.h>
 #include <cstdint>
-
-#include <sol/sol.hpp>
 
 using namespace iota;
 

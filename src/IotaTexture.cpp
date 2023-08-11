@@ -1,6 +1,5 @@
 #include "IotaTexture.hpp"
 #include "IotaApplication.hpp"
-#include "IotaScriptEnvironment.hpp"
 #include "IotaException.hpp"
 #include "IotaBasic.hpp"
 
@@ -12,7 +11,7 @@ Texture::Texture() : texture(nullptr), surface(nullptr) {}
 Texture& Texture::LoadTexture(const std::string& path) {
 	SDL_Texture* result = IMG_LoadTexture(Application::GetRenderer().data(), path.c_str());
 	if (!result) {
-		Application::Error("Texture Load Failure", SDL_GetError());
+		Application::Throw(ErrorType::ERROR, "Texture Load Failure", SDL_GetError());
 	}
 
 	texture = result;
@@ -21,7 +20,7 @@ Texture& Texture::LoadTexture(const std::string& path) {
 Texture& Texture::LoadTexture(const std::string& path, Renderer& rdrer) {
 	SDL_Texture* result = IMG_LoadTexture(rdrer.data(), path.c_str());
 	if (!result) {
-		Application::Error("Texture Load Failure", SDL_GetError());
+		Application::Throw(ErrorType::ERROR, "Texture Load Failure", SDL_GetError());
 	}
 
 	texture = result;
@@ -33,10 +32,3 @@ Texture::~Texture() {
 }
 
 SDL_Texture* Texture::data() { return texture; }
-
-void Texture::LoadLuaSTD() {
-	if (Application::IsInitialized()) return;
-	sol::state& lua = Lua::GetState();
-	sol::table& Iota = Lua::GetIota();
-
-	}

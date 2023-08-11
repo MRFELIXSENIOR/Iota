@@ -7,7 +7,7 @@
 #include "IotaDefs.hpp"
 
 namespace iota {
-	class Object : GameInstance::Instance, public RenderSurface {
+	class Object : public GameInstance::Instance, public RenderSurface {
 	public:
 		Object();
 		Object(ObjectShape sh);
@@ -33,7 +33,7 @@ namespace iota {
 		ObjectShape shape;
 	};
 
-	class GUIObject : GameInstance::Instance, RenderSurface {
+	class GUIObject : public GameInstance::Instance, public RenderSurface {
 	public:
 		GUIObject();
 		GUIObject(PosType x, PosType y, SizeType w, SizeType h);
