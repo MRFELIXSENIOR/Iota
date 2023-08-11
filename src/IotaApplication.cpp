@@ -55,7 +55,6 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 
 	app_window.Create(window_title, window_width, window_height);
 	app_renderer.Create(app_window);
-	app_initialized = true;
 
 	std::vector<std::string> input;
 	for (int i = 1; i < argc; ++i) {
@@ -64,6 +63,7 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 
 	SEnv::Initialize(input);
 
+	app_initialized = true;
 	return true;
 }
 
@@ -73,6 +73,7 @@ bool Application::Exit() {
 
 	IMG_Quit();
 	SDL_Quit();
+	SEnv::Clean();
 	std::cout << "Exiting...\n";
 	app_running = false;
 	return true;

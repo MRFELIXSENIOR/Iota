@@ -16,6 +16,10 @@ namespace iota {
 	class Renderer;
 	class Window;
 
+	namespace SEnv {
+		class Script;
+	};
+
 	namespace GameInstance {
 		class Instance;
 
@@ -121,6 +125,9 @@ namespace iota {
 		private:
 			Instance* parent;
 			std::unordered_multimap<std::type_info*, Instance*, type_info_hash, type_info_compare_equal> children;
+
+			std::vector<SEnv::Script*> attached_scripts;
+			friend class SEnv::Script;
 		};
 	} // namespace GameInstance
 } // namespace iota

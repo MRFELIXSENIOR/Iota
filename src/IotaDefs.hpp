@@ -1,11 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <SDL.h>
 
 namespace iota {
 	using PosType = int;
-	using SizeType = unsigned int;
+	using SizeType = uint32_t;
 
 	struct Color final {
 		uint8_t red, green, blue, alpha;
