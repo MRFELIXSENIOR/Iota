@@ -16,7 +16,7 @@ namespace iota {
 	class Renderer;
 	class Window;
 
-	namespace SEnv {
+	namespace Mono {
 		class Script;
 	};
 
@@ -126,8 +126,8 @@ namespace iota {
 			Instance* parent;
 			std::unordered_multimap<std::type_info*, Instance*, type_info_hash, type_info_compare_equal> children;
 
-			std::vector<SEnv::Script*> attached_scripts;
-			friend class SEnv::Script;
+			std::vector<Mono::Script*> attached_scripts;
+			friend class Mono::Script;
 		};
 	} // namespace GameInstance
 } // namespace iota

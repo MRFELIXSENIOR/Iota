@@ -61,7 +61,7 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 		input.emplace_back(argv[i]);
 	}
 
-	SEnv::Initialize(input);
+	Mono::Initialize(input);
 
 	app_initialized = true;
 	return true;
@@ -73,7 +73,7 @@ bool Application::Exit() {
 
 	IMG_Quit();
 	SDL_Quit();
-	SEnv::Clean();
+	Mono::Clean();
 	std::cout << "Exiting...\n";
 	app_running = false;
 	return true;
