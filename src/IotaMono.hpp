@@ -1,7 +1,5 @@
 #pragma once
 
-#include "IotaGameInstance.hpp"
-
 #include <concepts>
 #include <vector>
 #include <filesystem>
@@ -21,90 +19,68 @@
 
 namespace iota {
 	namespace Mono {
-		class Error : std::runtime_error {
-			using runtime_error::runtime_error;
-		};
-
-		struct Context {
+		struct Context final {
 		public:
 			MonoAssembly* assembly = nullptr;
 			MonoImage* img = nullptr;
 			std::filesystem::path assembly_path;
 
-			explicit Context(const std::string& cs_file);
+			//explicit Context(const std::string& cs_file);
+			explicit Context(std::filesystem::path path_to_assembly);
 			explicit Context(MonoAssembly* assembly);
-			explicit Context(MonoImage* img);
+			explicit Context(MonoImage* image);
+			~Context();
 
-			bool IsValid();
-		};
-
-		struct Domain final {
-		private:
-			mutable std::unordered_map<std::string, Context> contexts;
-			MonoDomain* dom;
-
-		public:
-			explicit Domain(const std::string& name);
-			~Domain();
-
-			std::optional<Context> GetContext(const std::string& path) const;
-			MonoDomain* get_ptr();
+			bool valid();
 		};
 
 		struct Function;
-
 		struct Object;
+
 		struct Class final {
 		private:
 			MonoClass* self = nullptr;
+			MonoType* mono_type = nullptr;
+
 			std::vector<Function> fn;
-			Context* context;
+			Context context;
+
 			std::string name;
 			std::string fullname;
 			std::string _namespace;
+			bool value_type;
+
+			void metadata_init();
 
 			friend struct Type;
 			friend struct Object;
 		public:
-			explicit Class(MonoClass* klass);
-			explicit Class(MonoType* type);
+			explicit Class(MonoClass* mono_class);
+			explicit Class(MonoType* mono_type);
 
-			Class(const std::string& class_name, Context& ctx);
-			Class(const std::string& name_space, const std::string& class_name, Context& ctx);
-
+			explicit Class(const std::string& name_space, const std::string& class_name, Context& ctx);
+			explicit Class(const std::string& class_name, Context& ctx);
+			~Class();
 
 			Object& CreateInstance();
 
-			~Class();
+			MonoClass* get_mono_ptr() const;
+			MonoType* get_mono_type_ptr() const;
+			bool valid() const;
 
-			MonoClass* get_ptr() const;
-
-			bool IsValid() const;
-
-			std::string GetNamespace() const;
-			std::string GetName() const;
+			const std::string& get_namespace() const;
+			const std::string& get_fullname() const;
+			const std::string& get_name() const;
 
 			Function* GetFunctionRef(const std::string& name, int arg_count);
 		};
 
-		struct Type {
+		struct Function {
 		private:
-			MonoType* self = nullptr;
-			Class class_ref;
-
-			std::string name;
-			friend struct Class;
-		public:
-			Type(MonoType* mono_type);
-			Type(MonoClass* mono_class);
-			Type(const std::string& type_name, Context& ctx);
-		};
-
-		class Function {
-		private:
-			Class* cl_ref = nullptr;
+			std::optional<Class> class_ref;
 
 			MonoMethod* self = nullptr;
+			MonoMethodSignature* sig = nullptr;
 			MonoMethodDesc* desc = nullptr;
 
 			std::string name;
@@ -112,13 +88,16 @@ namespace iota {
 
 			friend struct Class;
 		public:
+			Function(MonoMethod* mono_method);
 			Function(Class& klass, const std::string& fn_name, int argc);
-			Function(const std::string& fn_name, int argc, Context& ctx);
+			Function(const std::string& fn_name, int argc, Context& ctx); //global function
 			~Function();
 
-			bool IsValid() const;
-			MonoMethod* get_ptr() const;
-			std::string GetName() const;
+			bool valid() const;
+			MonoMethod* get_mono_ptr() const;
+			MonoMethodDesc* get_mono_desc_ptr() const;
+			MonoMethodSignature* get_mono_sig_ptr() const;
+			const std::string& get_name() const;
 
 			template <typename... Args>
 			void Invoke(Args... args) {
@@ -142,37 +121,8 @@ namespace iota {
 			Object(Class& klass);
 			~Object();
 
-			bool IsValid();
-
-			MonoObject* get_ptr() const;
+			bool valid();
+			MonoObject* get_mono_ptr() const;
 		};
-
-		struct Script : public GameInstance::Instance {
-		private:
-			Context context;
-			std::string attached_iname;
-			bool attached;
-			std::filesystem::path script_path;
-			std::string class_name;
-
-			Function* Load;
-			friend class GameInstance::Instance;
-
-		public:
-			Script(const std::string& file_name);
-			~Script();
-
-			template <GameInstance::IsInstance T>
-			void Attach(T& instance) {
-				attached = true;
-				attached_iname = instance.name.data();
-				instance.attached_scripts.push_back(this);
-			}
-
-			void InvokeLoad();
-		};
-
-		void Initialize(std::vector<std::string>& file_names);
-		void Clean();
 	}
 };

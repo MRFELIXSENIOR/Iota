@@ -11,7 +11,7 @@ Texture::Texture() : texture(nullptr), surface(nullptr) {}
 Texture& Texture::LoadTexture(const std::string& path) {
 	SDL_Texture* result = IMG_LoadTexture(Application::GetRenderer().data(), path.c_str());
 	if (!result) {
-		Application::Throw(ErrorType::ERROR, "Texture Load Failure", SDL_GetError());
+		throw RuntimeError("Texture Load Failure" + std::string(SDL_GetError()));
 	}
 
 	texture = result;
@@ -20,7 +20,7 @@ Texture& Texture::LoadTexture(const std::string& path) {
 Texture& Texture::LoadTexture(const std::string& path, Renderer& rdrer) {
 	SDL_Texture* result = IMG_LoadTexture(rdrer.data(), path.c_str());
 	if (!result) {
-		Application::Throw(ErrorType::ERROR, "Texture Load Failure", SDL_GetError());
+		throw RuntimeError("Texture Load Failure" + std::string(SDL_GetError()));
 	}
 
 	texture = result;

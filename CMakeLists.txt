@@ -10,10 +10,32 @@ project(Iota)
 # Main
 
 set(MONO_ROOT "C:/Program Files/Mono")
-set(MONO_INCLUDE_DIR "${MONO_ROOT}/include/mono-2.0")
-set(MONO_LIB "${MONO_ROOT}/lib")
+set(MONO_INCLUDE_DIR ${MONO_ROOT}/include/mono-2.0)
+set(MONO_LIB ${MONO_ROOT}/lib)
 
+set(CSHARP_SRC_DIR {CMAKE_SOURCE_DIR}/src/mono_src)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+
+file(GLOB CSHARP_SRC_FILES CSHARP_SRC_DIR/*.cs)
+
+foreach(CSHARP_SRC_FILE ${CSHARP_SRC_FILES})
+	get_filename_component(FILE_NAME ${CSHARP_SRC_FILE} NAME_WE)
+	set(OUT_ASSEMBLY "lib/mono/${FILE_NAME}.dll")
+	
+	set(COMPILE_CMD "csc /t:library /out:\"${OUT_ASSEMBLY}\" \"${CSHARP_SRC_FILE}\"")
+
+	add_custom_command(
+		OUTPUT ${OUT_ASSEMBLY}
+		COMMAND ${COMPILE_CMD}
+		DEPENDS ${CSHARP_SRC_FILE}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		COMMENT "Compiling Assembly: ${CSHARP_SRC_FILE}"
+		VERBATIM
+	)
+
+	add_custom_target(IotaAssembly_${FILE_NAME} ALL DEPENDS ${OUT_ASSEMBLY})
+endforeach()
+
 add_library(
 	IotaEngine
 	SHARED
@@ -21,7 +43,9 @@ add_library(
 	${SRC_DIR}/IotaApplication.cpp
 	${SRC_DIR}/IotaBehavior.cpp
 	${SRC_DIR}/IotaGameInstance.cpp
+	${SRC_DIR}/IotaMonoJIT.cpp
 	${SRC_DIR}/IotaMono.cpp
+	${SRC_DIR}/IotaScript.cpp
 	${SRC_DIR}/IotaEvent.cpp
 	${SRC_DIR}/IotaDefs.cpp
 	${SRC_DIR}/IotaBasic.cpp

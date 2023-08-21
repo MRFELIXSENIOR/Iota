@@ -14,46 +14,23 @@ using namespace Basic;
 Renderer::Renderer() {}
 Renderer::Renderer(Window& win) {
 	if (!win.data()) {
-		Application::Throw(ErrorType::ERROR, "Cannot Create Renderer with Uninitialized Window");
+		throw RuntimeError("Cannot Create Renderer with Uninitialized Window");
 	}
-	else {
 		renderer = SDL_CreateRenderer(win.data(), -1, SDL_RENDERER_ACCELERATED);
 		if (!renderer) {
-			Application::Throw(
-				ErrorType::ERROR,
-				"Failed To Create Renderer!",
-				SDL_GetError());
+			throw RuntimeError("Failed To Create Renderer! " + std::string(SDL_GetError()));
 		}
-	}
 }
 Renderer::Renderer(Window& win, bool points) {
 	if (!win.data() || !SDL_GetRenderer(win.data())) {
-		Application::Throw(ErrorType::ERROR, "Failed To Create A Renderer With Null Window or Renderer Associated Is Null");
+		throw RuntimeError("Failed To Create A Renderer with NULL Window or Renderer Associated Is NULL");
 	}
-	else {
-		if (points) {
-			renderer = SDL_GetRenderer(win.data());
-		}
+
+	if (points) {
+		renderer = SDL_GetRenderer(win.data());
 	}
 }
 Renderer::~Renderer() { Destroy(); }
-
-bool Renderer::Create(Window& win) {
-	if (!win.window) {
-		Application::Throw(ErrorType::ERROR, "Cannot Create Renderer with Uninitialized Window");
-		return false;
-	}
-
-	renderer = SDL_CreateRenderer(win.window, -1, SDL_RENDERER_ACCELERATED);
-	if (!renderer) {
-		Application::Throw(
-			ErrorType::ERROR,
-			"Failed To Create Renderer!",
-			SDL_GetError());
-		return false;
-	}
-	return true;
-}
 
 void Renderer::SetDrawColor(Color color) { SDL_SetRenderDrawColor(renderer, color.red, color.green, color.blue, color.alpha); }
 
@@ -128,39 +105,18 @@ Window::Window(std::string window_title, unsigned int window_width,
 		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		window_width, window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if (!window) {
-		Application::Throw(ErrorType::ERROR, "Failed To Create Window!", SDL_GetError());
+		throw RuntimeError("Failed To Create Window!" + std::string(SDL_GetError()));
 	}
 }
 Window::Window(SDL_Window* win) {
 	if (!win) {
-		Application::Throw(ErrorType::ERROR, "Failed To Create Window With A Null Window!");
+		throw RuntimeError("Failed To Create Window With A Null Window!");
 	}
-	else {
-		window = win;
-	}
+
+	window = win;
 }
 
 Window::~Window() { Destroy(); }
-
-bool Window::Create(std::string window_title, unsigned int window_width,
-	unsigned int window_height) {
-
-	window = SDL_CreateWindow(
-		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
-	if (!window) {
-		Application::Throw(
-			ErrorType::ERROR,
-			"Failed To Create Window!",
-			SDL_GetError());
-		return false;
-	}
-	return true;
-}
-
-void Window::Destroy() {
-	SDL_DestroyWindow(window);
-}
 
 SDL_Window* Window::data() const { return window; }
 

@@ -2,6 +2,7 @@
 #include "IotaException.hpp"
 #include "IotaBasic.hpp"
 #include "IotaMono.hpp"
+#include "IotaMonoJIT.hpp"
 #include "IotaEvent.hpp"
 #include "IotaTexture.hpp"
 
@@ -29,25 +30,27 @@ static int app_framelimit = 60;
 bool Application::IsInitialized() { return app_initialized; }
 bool Application::IsRunning() { return app_running; }
 
+#define decl_str(v) std::string(v)
+
 bool Application::Initialize(const std::string& window_title, int window_width, int window_height, int argc, char** argv) {
 #define SOL_ALL_SAFETIES_ON 1
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-		Application::Throw(ErrorType::RUNTIME_ERROR, "SDL Initialization Failure", SDL_GetError());
+		throw RuntimeError("SDL Initialization Failure" + std::string(SDL_GetError()));
 		return false;
 	}
 
 	if (IMG_Init(IMG_INIT_PNG) < 0) {
-		Application::Throw(ErrorType::RUNTIME_ERROR, "SDL_Image Initialization Failure", IMG_GetError());
+		throw RuntimeError("SDL_Image Initialization Failure" + std::string(IMG_GetError()));
 		return false;
 	}
 
 	if (TTF_Init() < 0) {
-		Application::Throw(ErrorType::RUNTIME_ERROR, "SDL_ttf Initialization Failure", TTF_GetError());
+		throw RuntimeError("SDL_ttf Initialization Failure" + std::string(TTF_GetError()));
 		return false;
 	}
 
 	if (Mix_Init(MIX_INIT_OGG) < 0) {
-		Application::Throw(ErrorType::RUNTIME_ERROR, "SDL_mixer Initialization Failure", Mix_GetError());
+		throw RuntimeError("SDL_mixer Initialization Failure" + std::string(Mix_GetError()));
 		return false;
 	}
 
@@ -56,12 +59,7 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 	app_window.Create(window_title, window_width, window_height);
 	app_renderer.Create(app_window);
 
-	std::vector<std::string> input;
-	for (int i = 1; i < argc; ++i) {
-		input.emplace_back(argv[i]);
-	}
-
-	Mono::Initialize(input);
+	Mono::Initialize();
 
 	app_initialized = true;
 	return true;
@@ -81,7 +79,7 @@ bool Application::Exit() {
 
 void Application::Start() {
 	if (app_initialized == false) {
-		Application::Throw(ErrorType::RUNTIME_ERROR, "Application Is Not Initialized!");
+		throw RuntimeError("Application Is Not Initialized");
 		return;
 	}
 
