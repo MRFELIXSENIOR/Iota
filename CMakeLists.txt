@@ -13,8 +13,9 @@ set(MONO_ROOT "C:/Program Files/Mono")
 set(MONO_INCLUDE_DIR ${MONO_ROOT}/include/mono-2.0)
 set(MONO_LIB ${MONO_ROOT}/lib)
 
-set(CSHARP_SRC_DIR {CMAKE_SOURCE_DIR}/src/mono_src)
+set(CSHARP_SRC_DIR {CMAKE_SOURCE_DIR}/src/mono)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(MONO_SRC_DIR ${SRC_DIR}/MonoEngine)
 
 file(GLOB CSHARP_SRC_FILES CSHARP_SRC_DIR/*.cs)
 
@@ -39,20 +40,26 @@ endforeach()
 add_library(
 	IotaEngine
 	SHARED
-	${SRC_DIR}/IotaException.cpp
-	${SRC_DIR}/IotaApplication.cpp
-	${SRC_DIR}/IotaBehavior.cpp
-	${SRC_DIR}/IotaGameInstance.cpp
-	${SRC_DIR}/IotaMonoJIT.cpp
-	${SRC_DIR}/IotaMono.cpp
-	${SRC_DIR}/IotaScript.cpp
-	${SRC_DIR}/IotaEvent.cpp
-	${SRC_DIR}/IotaDefs.cpp
-	${SRC_DIR}/IotaBasic.cpp
-	${SRC_DIR}/IotaKeyboard.cpp
-	${SRC_DIR}/IotaTexture.cpp
-	${SRC_DIR}/IotaModel.cpp
-	${SRC_DIR}/IotaFont.cpp
+	"${SRC_DIR}/IotaException.cpp"
+	"${SRC_DIR}/IotaApplication.cpp"
+	"${SRC_DIR}/IotaBehavior.cpp"
+	"${SRC_DIR}/IotaGameInstance.cpp"
+	"${MONO_SRC_DIR}/JIT.cpp"
+	"${MONO_SRC_DIR}/TypeTraits.cpp"
+	"${MONO_SRC_DIR}/Context.cpp"
+	"${MONO_SRC_DIR}/Type.cpp"
+	"${MONO_SRC_DIR}/Object.cpp"
+	"${MONO_SRC_DIR}/Property.cpp"
+	"${MONO_SRC_DIR}/Function.cpp"
+	"${MONO_SRC_DIR}/String.cpp"
+	"${SRC_DIR}/IotaScript.cpp"
+	"${SRC_DIR}/IotaEvent.cpp"
+	"${SRC_DIR}/IotaDefs.cpp"
+	"${SRC_DIR}/IotaBasic.cpp"
+	"${SRC_DIR}/IotaKeyboard.cpp"
+	"${SRC_DIR}/IotaTexture.cpp"
+	"${SRC_DIR}/IotaModel.cpp"
+	"${SRC_DIR}/IotaFont.cpp"
 	)
 
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)

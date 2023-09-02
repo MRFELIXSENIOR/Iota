@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 #include <vector>
+#include <map>
 
 #include <mono/utils/mono-logger.h>
 #include <mono/jit/jit.h>
@@ -20,20 +21,21 @@ namespace iota {
 			void Clean();
 		}
 
-		struct CompileOptions {
+		struct CompileOption {
 			std::vector<std::filesystem::path> files; //paths to c# scripts
 
 			std::vector<std::string> references; //references name
 			std::vector<std::filesystem::path> ref_locations; //references locations
 		};
 
-		enum class CompilationResult {
-			SUCCESS,
-			FAILED
+		struct RunResult {
+			std::filesystem::path script_file_path;
+			bool result;
 		};
 
-		CompilationResult RunScript(const std::vector<std::filesystem::path>& scripts_path, const ExceptionHandler& exc_callback);
-		CompilationResult RunScript(const std::vector<std::filesystem::path>& scripts_path);
+		using Result = const std::vector<RunResult>&;
+		Result RunScript(const std::vector<std::filesystem::path>& scripts_path, const ExceptionHandler& exc_callback);
+		Result RunScript(const std::vector<std::filesystem::path>& scripts_path);
 
 		void Initialize();
 		void Clean();

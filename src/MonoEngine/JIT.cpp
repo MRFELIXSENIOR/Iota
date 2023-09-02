@@ -1,5 +1,4 @@
-#include "IotaMonoJIT.hpp"
-#include "IotaMono.hpp"
+#include "JIT.hpp"
 
 #include <unordered_map>
 #include <cstdlib>
@@ -42,7 +41,7 @@ inline std::string quote_wrap(const std::string& str) {
 	return "\"" + str + "\"";
 }
 
-int compile(CompileOptions option, bool debug) {
+int compile(CompileOption option, bool debug) {
 	std::string cmd = "csc";
 	for (auto& path : option.files) {
 		cmd += " ";
@@ -73,22 +72,16 @@ int compile(CompileOptions option, bool debug) {
 	return std::system(cmd.c_str());
 }
 
-void DefaultExceptionHandler(const Exception& exc) {
+void DefaultExceptionHandler(const ExceptionReference& exc) {
 	std::cerr << "[Iota] [Mono Error] [" << exc.get_name() << "] " << exc.what() << '\n';
 }
 
-CompilationResult Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path, const ExceptionHandler& exc_callback) {
-	CompileOptions opt;
-	opt.files = scripts_path;
-
-	if (compile(opt, true) != 0)
-		return CompilationResult::FAILED;
-
+Result Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path, const ExceptionHandler& exc_callback) {
 	MonoDomain* root = mono_get_root_domain();
 	MonoAssembly* assembly = mono_domain_assembly_open(root, "Iota-ScriptAssembly.dll");
 	MonoImage* image = mono_assembly_get_image(assembly);
 
-	std::vector<MonoException*> exc;
+	std::vector<RunResult> script_result;
 	for (auto& path : scripts_path) {
 		MonoClass* cl = mono_class_from_name(image, "", path.filename().replace_extension("").string().c_str());
 		MonoObject* obj = mono_object_new(root, cl);
@@ -98,16 +91,24 @@ CompilationResult Mono::RunScript(const std::vector<std::filesystem::path>& scri
 		if (!method)
 			continue;
 
-		MonoObject* exception;
+		MonoObject* exception = nullptr;
 		mono_runtime_invoke(method, obj, nullptr, &exception);
 		if (exception) {
-			exc_callback(Exception(exception));
-			return CompilationResult::FAILED;
+			exc_callback(ExceptionReference(exception));
+			script_result.push_back({ path, false });
+
+			mono_free(exception);
+			continue;
 		}
+
+		script_result.push_back({ path, true });
+		mono_free(obj);
 	}
+
+	return script_result;
 }
 
-CompilationResult Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path) {
+ Result Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path) {
 	return RunScript(scripts_path, DefaultExceptionHandler);
 }
 

@@ -44,12 +44,13 @@ namespace iota {
 			bool operator==(const T& rhs) { return (value == rhs); }
 			bool operator!=(const T& rhs) { return (value != rhs); }
 		};
-
+		
 		template<typename T, typename P>
-		concept IsProperty = std::is_base_of_v<Property<P>, T>;
+		concept IsProperty = std::is_base_of_v<GameInstance::Property<P>, T>;
 
 		template <typename T>
-		concept IsInstance = std::is_base_of_v<Instance, T>;
+		concept IsInstance = std::is_base_of_v<GameInstance::Instance, T>;
+
 
 		struct type_info_hash {
 			std::size_t operator()(const std::type_info* type) const {

@@ -22,35 +22,39 @@ namespace iota {
 	};
 
 	namespace Mono {
-		class Domain;
 
-		enum class LogLevel {
-			ERROR,
-			CRITICAL,
-			WARNING,
-			MESSAGE,
-			INFO,
-			DEBUG,
+		struct ExceptionInfo {
+			std::string message;
+			std::string stack_trace;
+			std::string class_name;
 		};
 
-		class Exception {
+		struct Exception : public RuntimeError {
 		public:
-			explicit Exception(const std::string& name, const std::string& msg);
-			explicit Exception(MonoObject* exception);
+			explicit Exception(MonoObject* mono_exc_object);
 
-			static void Raise(const std::string& name, const std::string& msg);
-			static void Raise(MonoObject* exception);
+			const std::string& get_class_name() const noexcept;
+			const std::string& get_message() const noexcept;
+			const std::string& get_stack_trace() const noexcept;
 
-			const char* what() const noexcept;
-			const char* get_name() const noexcept;
+		private:
+			ExceptionInfo info;
+		};
+
+		struct ExceptionReference : public Exception {
+		public:
+			using Exception::Exception;
+
+			void Raise();
+
 			MonoException* get_mono_ptr() const;
+			bool valid();
 
 		private:
 			MonoException* mono_exception;
 			std::string name;
-			std::string message;
 		};
 
-		using ExceptionHandler = std::function<void(const Exception&)>;
+		using ExceptionHandler = std::function<void(const ExceptionReference&)>;
 	}
 };
