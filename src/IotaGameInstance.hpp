@@ -15,42 +15,47 @@
 namespace iota {
 	class Renderer;
 	class Window;
-
-	namespace Mono {
-		class Script;
-	};
+	class Script;
 
 	namespace GameInstance {
 		class Instance;
 
 		template <typename T>
+		concept IsAssignable = std::is_assignable<T&, T&&>::value;
+
+		template <IsAssignable T>
 		struct Property {
 		private:
 			T value;
 			Event::EventSignal<T> signal;
+			std::string property_name;
 
 		public:
 			Property() {}
 			explicit Property(T val) : value(val) {}
 			~Property() {}
 
-			std::string property_name;
+			T Value() const { return value; }
 
-			T data() { return value; }
-			void set(T val) { signal.Fire(value); value = val; }
-			Property<T>& operator=(T rhs) { set(rhs); }
-			Event::EventSignal<T>& GetValueChangedSignal() { return signal; }
+			void Set(const T& val) const { 
+				signal.Fire(value); 
+				value = val; 
+			}
+
+			Property<T>& operator=(const T& rhs) const { Set(rhs); }
+			Event::EventSignal<T>& GetValueChangedSignal() const { return signal; }
+
+			const std::string& GetName() const { return property_name; }
 
 			bool operator==(const T& rhs) { return (value == rhs); }
 			bool operator!=(const T& rhs) { return (value != rhs); }
 		};
 		
-		template<typename T, typename P>
-		concept IsProperty = std::is_base_of_v<GameInstance::Property<P>, T>;
+		template<typename T, typename PType>
+		concept IsProperty = std::is_base_of_v<GameInstance::Property<PType>, T>;
 
 		template <typename T>
 		concept IsInstance = std::is_base_of_v<GameInstance::Instance, T>;
-
 
 		struct type_info_hash {
 			std::size_t operator()(const std::type_info* type) const {
@@ -127,8 +132,8 @@ namespace iota {
 			Instance* parent;
 			std::unordered_multimap<std::type_info*, Instance*, type_info_hash, type_info_compare_equal> children;
 
-			std::vector<Mono::Script*> attached_scripts;
-			friend class Mono::Script;
+			std::vector<Script*> attached_scripts;
+			friend class Script;
 		};
 	} // namespace GameInstance
 } // namespace iota

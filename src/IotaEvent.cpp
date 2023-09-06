@@ -1,4 +1,5 @@
 #include "IotaEvent.hpp"
+#include "IotaBehavior.hpp"
 #include "IotaApplication.hpp"
 #include "IotaKeyboard.hpp"
 
@@ -24,6 +25,15 @@ void Event::PollEvent() {
 
 		case SDL_KEYUP:
 			Keyboard::HandleKeyEvent(global_ev.key.keysym.scancode, Keyboard::KeyState::RELEASE);
+			break;
+
+		case SDL_WINDOWEVENT_FOCUS_GAINED:
+		{
+			auto map = GetActorMap();
+			for (auto& b : map) {
+				b.second->ActorInit();
+			}
+		}
 			break;
 		}
 	}

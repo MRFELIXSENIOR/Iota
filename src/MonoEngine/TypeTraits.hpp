@@ -11,8 +11,6 @@
 
 namespace iota {
 	namespace Mono {
-		struct Function;
-		
 		template <typename T>
 		concept IsInvokable = requires(T t) {
 			{ t() };
@@ -26,10 +24,8 @@ namespace iota {
 			using ReturnType = RT;
 			using FullSignature = RT(Args...);
 			static constexpr size_t ArgCount = sizeof...(Args);
-			using ArgTypes = Args...;
-			using ArgTypesDecayed = std::decay_t<Args>...;
-			using ArgTypesTupleType = std::tuple<Args...>;
-			using ArgTypesDecayedTupleType = std::tuple<std::decay_t<Args...>>;
+			using ArgTypes = std::tuple<Args...>;
+			using ArgTypesDecayed = std::tuple<std::decay_t<Args>...>;
 		};
 
 		template <typename RT, typename... Args>
@@ -42,7 +38,7 @@ namespace iota {
 
 		template <typename OC, typename RT, typename... Args>
 		struct FunctionTraits<RT(OC::*)(Args...) const> : public FunctionTraits<RT(Args...)> {
-			using OwnerType = const OC&
+			using OwnerType = const OC&;
 		};
 
 		template <typename OC, typename RT, typename... Args>
@@ -144,49 +140,6 @@ namespace iota {
 				return n == fullname;
 
 			return true;
-		}
-
-		template <typename TupleLike, typename Fn, std::size_t... Indices>
-		void ForEachTupleImpl(TupleLike&& tuple, Fn&& fn, std::index_sequence<Indices...>) {
-			(std::forward<Fn>(fn)(std::get<Indices>(std::forward<TupleLike>(tuple))), ...);
-		}
-
-		template <typename TupleLike, typename Fn>
-		void ForEachTuple(TupleLike&& tuple, Fn&& fn) {
-			ForEachTupleImpl(
-				std::forward<TupleLike>(tuple),
-				std::forward<Fn>(fn),
-				std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<TupleLike>>>{}
-				);
-		}
-
-		template <typename Signature>
-		bool HasCompatibleSignature(const Function& function) {
-			using ReturnType = typename FunctionTraits<Signature>::ReturnType;
-			using ArgTypes = typename FunctionTraits<Signature>::ArgTypesDecayed;
-			constexpr size_t ArgCount = FunctionTraits<Signature>::ArgCount;
-			auto expected_rt = function.GetReturnType();
-			auto expected_arg_types = function.GetArgTypes();
-
-			bool result = expected_arg_types.size() == ArgCount;
-			if (!result)
-				return false;
-
-			result &= IsTypeFullnameCompatible<ReturnType>(expected_rt.get_fullname());
-			if (!result)
-				return false;
-
-			size_t index = 0;
-
-			ForEachTuple(tuple,
-				[&](const auto& arg) {
-					const auto& fullname = ArgTypes[index].get_fullname();
-					using arg_type = decltype(arg);
-					result &= IsTypeFullnameCompatible<arg_type>(fullname);
-					++index;
-				});
-
-			return result;
 		}
 	}
 }

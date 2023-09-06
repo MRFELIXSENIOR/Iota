@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Type.hpp"
+#include "TypeClass.hpp"
 
 #include <mono/metadata/object.h>
 
@@ -9,16 +9,16 @@ namespace iota {
 		struct Object {
 		private:
 			MonoObject* self;
-			Type type;
+			TypeClass klass;
 
 		public:
 			explicit Object(MonoObject* mono_obj);
-			explicit Object(const Type& klass);
-			~Object();
+			explicit Object(const TypeClass& klass);
 
-			bool is_valid();
-			MonoObject* get_mono_ptr() const;
-			const Type& GetType() const;
+			bool IsValid();
+
+			MonoObject* GetDataPointer() const;
+			const TypeClass& GetClass() const;
 		};
 	}
 }

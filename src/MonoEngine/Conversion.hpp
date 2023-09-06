@@ -11,6 +11,11 @@
 namespace iota {
 	namespace Mono {
 		template <typename T>
+		requires std::is_pod<T>::value
+		auto GetMonoValue(T& t) { return std::addressof(t); }
+		MonoObject* GetMonoValue(MonoObject* t);
+
+		template <typename T>
 		struct ConvertMonoType {
 			using CppType = T;
 			using UnboxedType = T;
@@ -19,9 +24,9 @@ namespace iota {
 			static CppType FromUnboxedType(const UnboxedType& obj) { return obj; }
 			static CppType FromBoxedType(const BoxedType& obj) {
 				Object o(obj);
-				Type type = o.GetType();
-				unsigned int mono_size = type.get_sizeof();
-				unsigned int mono_align = type.get_alignof();
+				TypeClass type = o.GetClass();
+				unsigned int mono_size = type.GetSize();
+				unsigned int mono_align = type.GetAlign();
 				unsigned int cpp_size = sizeof(CppType);
 				unsigned int cpp_align = alignof(CppType);
 				if (mono_size > cpp_size && mono_align > cpp_align)
@@ -37,7 +42,7 @@ namespace iota {
 			using UnboxedType = MonoObject*;
 			using BoxedType = MonoObject*;
 
-			static UnboxedType ToMonoType(const CppType& obj) { return obj.get_mono_ptr(); }
+			static UnboxedType ToMonoType(const CppType& obj) { return obj.GetPointer(); }
 			static CppType FromUnboxedType(const UnboxedType& obj) { return Object(obj); }
 			static CppType FromBoxedType(const BoxedType& obj) { return Object(obj); }
 		};
@@ -48,15 +53,15 @@ namespace iota {
 			using UnboxedType = MonoObject*;
 			using BoxedType = MonoObject*;
 			static UnboxedType ToMonoType(const CppType& obj) {
-				return String(obj).get_mono_ptr();
+				return String(obj).GetPointer();
 			}
 
 			static CppType FromUnboxedType(const UnboxedType& obj) {
-				return String(Object(obj)).utf8();
+				return String(Object(obj)).ToUTF8();
 			}
 
 			static CppType FromBoxedType(const BoxedType& obj) {
-				return String(Object(obj)).utf8();
+				return String(Object(obj)).ToUTF8();
 			}
 		};
 	}

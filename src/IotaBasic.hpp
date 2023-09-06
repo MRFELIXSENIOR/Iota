@@ -26,31 +26,40 @@ namespace iota {
 		CIRCLE
 	};
 
-	class Window {
+	class Window final {
 	private:
-		SDL_Window* window;
-		friend class Renderer;
+		SDL_Window* self;
+		SDL_Renderer* self_renderer;
 
 	public:
-		Window();
 		Window(std::string window_title, unsigned int window_width, unsigned int window_height);
 		Window(SDL_Window* window);
 		~Window();
 
-		bool Create(std::string window_title, unsigned int window_width,
-			unsigned int window_height);
-		void Destroy();
+		void SetDrawColor(Color color) const;
 
-		int GetCenterX();
-		int GetCenterY();
+		void RenderTexture(Texture& texture) const;
+		void RenderTexture(Texture& texture, RenderSurface& surface) const;
 
-		/*
-		size: Size in 2d either width or height
-		*/
-		int GetRelativeCenterX(int size_x);
-		int GetRelativeCenterY(int size_y);
+		void DrawRectangle(Basic::DrawMode mode, RenderSurface& surface) const;
+		void DrawTriangle(Basic::DrawMode mode, RenderSurface& surface) const;
+		void DrawCircle(Basic::DrawMode mode, RenderSurface& surface) const;
 
-		SDL_Window* data() const;
+		void Draw(ObjectShape shape, Basic::DrawMode mode, RenderSurface& surface) const;
+
+		int GetCenterX(int surface_size_x) const;
+		int GetCenterY(int surface_size_y) const;
+
+		struct Coordinate {
+			int x, y;
+		};
+
+		const Coordinate& GetCenter(const RenderSurface& surface) const;
+
+		static Window& GetCurrentFocusedWindow();
+
+		SDL_Window* GetDataPointer() const;
+		SDL_Renderer* GetRendererPointer() const;
 	};
 
 	struct RenderSurface {
@@ -68,42 +77,21 @@ namespace iota {
 		void Resize(unsigned int width, unsigned int height);
 		void Resize(Vector::Vec2<unsigned int> size);
 
-		SDL_Rect* data_rect() const;
-		SDL_Surface* data_suf() const;
+		SDL_Rect* GetRectData() const;
+		SDL_Surface* GetSurfaceData() const;
 
-		int& x() { return rect->x; }
-		int& y() { return rect->y; }
-		int& width() { return rect->w; }
-		int& height() { return rect->h; }
+		void SetX(int x);
+		int GetX() const;
+
+		void SetY(int y);
+		int GetY() const;
+
+		void SetWidth(int width);
+		int GetWidth() const;
+
+		void SetHeight(int height);
+		int GetHeight() const;
 
 		Color color;
-	};
-
-	class Renderer {
-	private:
-		SDL_Renderer* renderer;
-		friend class Window;
-
-	public:
-		Renderer();
-		Renderer(Window& win);
-		Renderer(Window& win, bool points);
-		~Renderer();
-
-		bool Create(Window& win);
-		void Destroy();
-
-		void SetDrawColor(Color color);
-
-		void RenderTexture(Texture& texture);
-		void RenderTexture(Texture& texture, RenderSurface& surface);
-
-		void DrawRectangle(Basic::DrawMode mode, RenderSurface& surface);
-		void DrawTriangle(Basic::DrawMode mode, RenderSurface& surface);
-		void DrawCircle(Basic::DrawMode mode, RenderSurface& surface);
-
-		void Draw(ObjectShape shape, Basic::DrawMode mode, RenderSurface& surface);
-
-		SDL_Renderer* data() const;
 	};
 } // namespace iota

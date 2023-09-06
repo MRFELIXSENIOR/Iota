@@ -2,18 +2,24 @@
 
 using namespace iota;
 
-int main(int argc, char** argv) {
-	Application::Initialize("Test Window", 640, 480, argc, argv);
+int main() {
+	bool debug = false;
 
-	try {
-		Mono::Script script("hw.cs");
-		script.InvokeLoad();
+	if (debug) {
+		try {
+			Application::Initialize("Test Window", 640, 480);
+			Script script("test\\hw.cs");
+			Application::Start();
+		}
+		catch (std::exception exc) {
+			std::cout << exc.what() << '\n';
+		}
 	}
-	catch (Mono::Error err) {
-		std::cerr << err.what() << '\n';
+	else {
+		Application::Initialize("Test Window", 640, 480);
+		Script script("test\\hw.cs");
+		Application::Start();
 	}
-
-	Application::Start();
 
 	return 0;
 }

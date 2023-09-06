@@ -1,5 +1,5 @@
 #include "Function.hpp"
-#include "Type.hpp"
+#include "TypeClass.hpp"
 #include "Context.hpp"
 #include "../IotaException.hpp"
 
@@ -23,38 +23,36 @@ Function::Function(MonoMethod* method): self(method) {
 	data();
 }
 
-Function::Function(const Type& cl_ref, const std::string& fn_name, int argc): self(mono_class_get_method_from_name(cl_ref.get_class_ptr(), fn_name.c_str(), argc)) {
+Function::Function(const TypeClass& cl_ref, const std::string& fn_name, int argc): self(mono_class_get_method_from_name(cl_ref.GetClassPointer(), fn_name.c_str(), argc)) {
 	if (!self)
-		throw RuntimeError("Cannot Create Mono Function Reference: " + fn_name + " in class: " + cl_ref.get_name());
+		throw RuntimeError("Cannot Create Mono Function Reference: " + fn_name + " in class: " + cl_ref.GetName());
 	data();
 }
 
-Function::Function(const Type& cl_ref, const std::string& fn_name_with_args) {
+Function::Function(const TypeClass& cl_ref, const std::string& fn_name_with_args) {
 	MonoMethodDesc* desc = mono_method_desc_new((":" + fn_name_with_args).c_str(), 0);
-	self = mono_method_desc_search_in_class(desc, cl_ref.get_class_ptr());
+	self = mono_method_desc_search_in_class(desc, cl_ref.GetClassPointer());
 	mono_method_desc_free(desc);
 	if (!self)
-		throw RuntimeError("Cannot Create Mono Function Reference: " + fn_name_with_args + " in class: " + cl_ref.get_name());
+		throw RuntimeError("Cannot Create Mono Function Reference: " + fn_name_with_args + " in class: " + cl_ref.GetName());
 	data();
 }
 
-Function::~Function() {}
-
-bool Function::is_valid() { return self != nullptr; }
-bool Function::is_static() {
+bool Function::IsValid() { return self != nullptr; }
+bool Function::IsStatic() {
 	unsigned int flags = mono_method_get_flags(self, nullptr);
 	return (flags & MONO_METHOD_ATTR_STATIC) != 0;
 }
 
-bool Function::is_virtual() {
+bool Function::IsVirtual() {
 	unsigned int flags = mono_method_get_flags(self, nullptr);
 	return (flags & MONO_METHOD_ATTR_VIRTUAL) != 0;
 }
 
-MonoMethod* Function::get_mono_ptr() const { return self; }
-MonoMethodSignature* Function::get_signature_ptr() const { return sig; }
-const std::string& Function::get_fullname() const { return fullname; }
-const std::string& Function::get_name() const { return name; }
+MonoMethod* Function::GetDataPointer() const { return self; }
+MonoMethodSignature* Function::GetSignaturePointer() const { return sig; }
+const std::string& Function::GetFullname() const { return fullname; }
+const std::string& Function::GetName() const { return name; }
 
 inline AccessModifier filter(unsigned int flags) {
 	switch (flags) {
@@ -76,13 +74,13 @@ AccessModifier Function::GetAccessModifier() const {
 	return filter(flags);
 }
 
-const Type& Function::GetReturnType() const {
+const TypeClass& Function::GetReturnType() const {
 	MonoType* rt = mono_signature_get_return_type(sig);
-	return Type(rt);
+	return TypeClass(rt);
 }
 
-const std::vector<Type>& Function::GetArgTypes() const {
-	std::vector<Type> args_t;
+const std::vector<TypeClass>& Function::GetArgTypes() const {
+	std::vector<TypeClass> args_t;
 	void* iter = nullptr;
 	MonoType* type = mono_signature_get_params(sig, &iter);
 	while (type != nullptr) {

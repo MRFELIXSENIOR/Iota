@@ -9,10 +9,11 @@ namespace iota {
 	namespace Event {
 		template <typename T, typename... Args>
 		concept IsCallable = requires(T t, Args... args) {
-			{ t(args...) } -> std::same_as<void>;
+			{ t(args...) };
 		};
 
-		template <typename... Args> class EventSignal {
+		template <typename... Args> 
+		class EventSignal {
 		protected:
 			sigslot::signal<Args...> signal;
 
@@ -23,13 +24,14 @@ namespace iota {
 
 			~EventSignal() {}
 
-			template <IsCallable<Args...> T>
-			void Connect(T fn) {
+			template <typename T>
+			requires IsCallable<T, Args...>
+			void Connect(T&& fn) {
 				signal.connect(fn);
 			}
 
 			void Disconnect() { signal.disconnect_all(); }
-			void Fire(Args... args) { signal.operator()(args...); }
+			void Fire(Args... args) { signal.operator()(std::forward<Args>(args)...); }
 		};
 
 		void PollEvent();

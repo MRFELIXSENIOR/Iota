@@ -7,7 +7,7 @@
 #include "IotaDefs.hpp"
 
 namespace iota {
-	class Object : public GameInstance::Instance, public RenderSurface {
+	class Object : protected GameInstance::Instance, public RenderSurface {
 	public:
 		Object();
 		Object(ObjectShape sh);
@@ -19,12 +19,7 @@ namespace iota {
 
 		void SetColor(Color c);
 		void SetColorRGB(uint8_t red, uint8_t green, uint8_t blue);
-		Color GetColor();
-
-		void SetX(PosType pos_x);
-		void SetY(PosType pos_y);
-		void SetWidth(PosType w);
-		void SetHeight(PosType h);
+		Color GetColor() const;
 
 		void Load() override;
 		void Render() override;

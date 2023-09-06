@@ -17,7 +17,7 @@
 namespace iota {
 	namespace Mono {
 		namespace JIT {
-			void Initialize(bool debug);
+			void Initialize(bool debug = false);
 			void Clean();
 		}
 
@@ -36,8 +36,5 @@ namespace iota {
 		using Result = const std::vector<RunResult>&;
 		Result RunScript(const std::vector<std::filesystem::path>& scripts_path, const ExceptionHandler& exc_callback);
 		Result RunScript(const std::vector<std::filesystem::path>& scripts_path);
-
-		void Initialize();
-		void Clean();
 	}
 }

@@ -1,6 +1,6 @@
 using System;
 
-namespace iota
+namespace Iota
 {
 	namespace Exceptions {
 		public class ExceptionClass : Exception {

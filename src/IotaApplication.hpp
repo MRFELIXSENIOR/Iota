@@ -9,11 +9,8 @@ namespace iota {
 	class Renderer;
 
 	namespace Application {
-		bool Initialize(const std::string& window_title, int window_width, int window_height, int argc, char** argv);
+		bool Initialize(const std::string& window_title, int window_width, int window_height);
 		void Start();
-
-		Window& GetWindow();
-		Renderer& GetRenderer();
 
 		bool Exit();
 

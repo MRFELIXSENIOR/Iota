@@ -1,10 +1,11 @@
 #include "IotaApplication.hpp"
 #include "IotaException.hpp"
 #include "IotaBasic.hpp"
-#include "IotaMono.hpp"
-#include "IotaMonoJIT.hpp"
 #include "IotaEvent.hpp"
+#include "IotaScript.hpp"
 #include "IotaTexture.hpp"
+
+#include "MonoEngine/Engine.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -19,8 +20,7 @@
 using namespace iota;
 using namespace Application;
 
-static Window app_window;
-static Renderer app_renderer;
+static Window* app_window;
 
 static bool app_running = false;
 static bool app_initialized = false;
@@ -32,8 +32,7 @@ bool Application::IsRunning() { return app_running; }
 
 #define decl_str(v) std::string(v)
 
-bool Application::Initialize(const std::string& window_title, int window_width, int window_height, int argc, char** argv) {
-#define SOL_ALL_SAFETIES_ON 1
+bool Application::Initialize(const std::string& window_title, int window_width, int window_height) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		throw RuntimeError("SDL Initialization Failure" + std::string(SDL_GetError()));
 		return false;
@@ -56,8 +55,7 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
-	app_window.Create(window_title, window_width, window_height);
-	app_renderer.Create(app_window);
+	app_window = new Window(window_title, window_width, window_height);
 
 	Mono::Initialize();
 
@@ -66,28 +64,36 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 }
 
 bool Application::Exit() {
-	if (app_running == false)
+	if (!app_running)
 		return false;
 
+	std::cout << "Exiting...\n";
 	IMG_Quit();
+	Mix_Quit();
+	TTF_Quit();
 	SDL_Quit();
 	Mono::Clean();
-	std::cout << "Exiting...\n";
+
+	delete app_window;
 	app_running = false;
 	return true;
 }
 
 void Application::Start() {
-	if (app_initialized == false) {
+	if (!app_initialized) {
 		throw RuntimeError("Application Is Not Initialized");
 		return;
 	}
+
+	const auto& scripts = GetScripts();
+	Mono::RunScript(scripts);
 
 	app_running = true;
 	Uint32 framestart;
 	float frametime;
 
-	SDL_RaiseWindow(app_window.data());
+	Window& current_window = Window::GetCurrentFocusedWindow();
+	SDL_RaiseWindow(current_window.GetDataPointer());
 
 	ActorMap& actor_map = GetActorMap();
 	for (auto& a : actor_map) {
@@ -98,14 +104,14 @@ void Application::Start() {
 		framestart = SDL_GetTicks();
 
 		Event::PollEvent();
-		SDL_RenderClear(app_renderer.data());
+		SDL_RenderClear(current_window.GetRendererPointer());
 
 		for (auto& a : actor_map) {
 			a.second->Render();
 		}
 
-		SDL_SetRenderDrawColor(app_renderer.data(), 0, 0, 0, 0);
-		SDL_RenderPresent(app_renderer.data());
+		SDL_SetRenderDrawColor(current_window.GetRendererPointer(), 0, 0, 0, 0);
+		SDL_RenderPresent(current_window.GetRendererPointer());
 
 		frametime = (SDL_GetTicks() - framestart) / 1000.0f;
 
@@ -119,9 +125,6 @@ void Application::Start() {
 		}
 	}
 }
-
-Window& Application::GetWindow() { return app_window; }
-Renderer& Application::GetRenderer() { return app_renderer; }
 
 void Application::SetFrameLimit(unsigned int target) {
 	app_framelimit = target;

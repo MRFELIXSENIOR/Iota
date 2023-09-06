@@ -25,7 +25,6 @@ namespace iota {
 	public:
 		Font(const std::string& font_path, FontSize size);
 		Font(const std::string& font_path);
-
 		~Font();
 
 		void Resize(FontSize size);

@@ -4,13 +4,21 @@
 #include <memory>
 
 namespace iota {
+	namespace Event {
+		void PollEvent();
+	}
+
 	class Window;
 	class Renderer;
 
 	struct GameBehavior {
+	private:
+		void ActorInit();
+
+		friend void Event::PollEvent();
 	protected:
-		std::unique_ptr<Window> actor_window;
-		std::unique_ptr<Renderer> actor_renderer;
+		std::shared_ptr<Window> actor_window;
+		std::shared_ptr<Renderer> actor_renderer;
 
 		uint64_t id;
 

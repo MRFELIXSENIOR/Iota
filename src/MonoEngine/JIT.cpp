@@ -1,4 +1,9 @@
 #include "JIT.hpp"
+#include "TypeClass.hpp"
+#include "Object.hpp"
+#include "Context.hpp"
+#include "FunctionInvoker.hpp"
+#include "Function.hpp"
 
 #include <unordered_map>
 #include <cstdlib>
@@ -72,50 +77,33 @@ int compile(CompileOption option, bool debug) {
 	return std::system(cmd.c_str());
 }
 
-void DefaultExceptionHandler(const ExceptionReference& exc) {
-	std::cerr << "[Iota] [Mono Error] [" << exc.get_name() << "] " << exc.what() << '\n';
-}
-
 Result Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path, const ExceptionHandler& exc_callback) {
-	MonoDomain* root = mono_get_root_domain();
-	MonoAssembly* assembly = mono_domain_assembly_open(root, "Iota-ScriptAssembly.dll");
-	MonoImage* image = mono_assembly_get_image(assembly);
+	CompileOption opt;
+	opt.files = scripts_path;
+	compile(opt, false);
+
+	Context context("Iota-ScriptAssembly.dll");
 
 	std::vector<RunResult> script_result;
 	for (auto& path : scripts_path) {
-		MonoClass* cl = mono_class_from_name(image, "", path.filename().replace_extension("").string().c_str());
-		MonoObject* obj = mono_object_new(root, cl);
-		mono_runtime_object_init(obj);
+		TypeClass klass("", path.filename().replace_extension("").string().c_str(), context);
+		Object obj = klass.CreateInstance();
 
-		MonoMethod* method = mono_class_get_method_from_name(cl, "Load", 0);
-		if (!method)
-			continue;
+		Function method = klass.GetFunction("Load", 0);
+		Invoker<void()> load_invoker(method);
+		load_invoker(obj, exc_callback);
 
-		MonoObject* exception = nullptr;
-		mono_runtime_invoke(method, obj, nullptr, &exception);
-		if (exception) {
-			exc_callback(ExceptionReference(exception));
+		if (!load_invoker.GetResult().success) {
 			script_result.push_back({ path, false });
-
-			mono_free(exception);
 			continue;
 		}
 
 		script_result.push_back({ path, true });
-		mono_free(obj);
 	}
 
-	return script_result;
+	return std::move(script_result);
 }
 
  Result Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path) {
 	return RunScript(scripts_path, DefaultExceptionHandler);
-}
-
-void Mono::Initialize() {
-	JIT::Initialize(true);
-}
-
-void Mono::Clean() {
-	JIT::Clean();
 }

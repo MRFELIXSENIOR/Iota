@@ -8,75 +8,101 @@
 #include <SDL.h>
 #include <SDL2_gfxPrimitives.h>
 
+static iota::Window* current_window = nullptr;
+
 using namespace iota;
 using namespace Basic;
 
-Renderer::Renderer() {}
-Renderer::Renderer(Window& win) {
-	if (!win.data()) {
-		throw RuntimeError("Cannot Create Renderer with Uninitialized Window");
-	}
-		renderer = SDL_CreateRenderer(win.data(), -1, SDL_RENDERER_ACCELERATED);
-		if (!renderer) {
-			throw RuntimeError("Failed To Create Renderer! " + std::string(SDL_GetError()));
-		}
-}
-Renderer::Renderer(Window& win, bool points) {
-	if (!win.data() || !SDL_GetRenderer(win.data())) {
-		throw RuntimeError("Failed To Create A Renderer with NULL Window or Renderer Associated Is NULL");
-	}
+Window::Window(std::string window_title, unsigned int window_width,
+	unsigned int window_height): 
+	self(SDL_CreateWindow(
+		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		window_width, window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL))
+{
+	if (!self)
+		throw RuntimeError("Could not Create Window, " + std::string(SDL_GetError()));
 
-	if (points) {
-		renderer = SDL_GetRenderer(win.data());
-	}
-}
-Renderer::~Renderer() { Destroy(); }
-
-void Renderer::SetDrawColor(Color color) { SDL_SetRenderDrawColor(renderer, color.red, color.green, color.blue, color.alpha); }
-
-// Texture
-
-void Renderer::RenderTexture(Texture& texture) {
-	SDL_RenderCopy(renderer, texture.data(), NULL, NULL);
+	self_renderer = SDL_CreateRenderer(self, -1, SDL_RENDERER_ACCELERATED);
+	current_window = this;
 }
 
-void Renderer::RenderTexture(Texture& texture, RenderSurface& surface) {
-	SDL_RenderCopy(renderer, texture.data(), NULL, surface.data_rect());
+Window::Window(SDL_Window* win): self(win) {
+	if (!self)
+		throw RuntimeError("Could not Create Window");
+
+	self_renderer = SDL_GetRenderer(self);
+	current_window = this;
+}
+
+Window::~Window() {
+	SDL_DestroyWindow(self);
+	SDL_DestroyRenderer(self_renderer);
+}
+
+Window& Window::GetCurrentFocusedWindow() { return *current_window; }
+SDL_Renderer* Window::GetRendererPointer() const { return self_renderer; }
+SDL_Window* Window::GetDataPointer() const { return self; }
+
+int Window::GetCenterX(int size_x) const { 
+	int x;
+	SDL_GetWindowSize(self, &x, nullptr);
+	x -= (size_x / 2);
+	return x; 
+}
+
+int Window::GetCenterY(int size_y) const {
+	int y;
+	SDL_GetWindowSize(self, nullptr, &y);
+	y -= (size_y / 2);
+	return y; 
+}
+
+const Window::Coordinate& Window::GetCenter(const RenderSurface& surface) const {
+	Coordinate coord;
+	coord.x = GetCenterX(surface.GetWidth());
+	coord.y = GetCenterY(surface.GetHeight());
+	return coord;
+}
+
+void Window::SetDrawColor(Color color) const { SDL_SetRenderDrawColor(self_renderer, color.red, color.green, color.blue, color.alpha); }
+
+// Textures
+void Window::RenderTexture(Texture& texture) const {
+	SDL_RenderCopy(self_renderer, texture.GetDataPointer(), NULL, NULL);
+}
+
+void Window::RenderTexture(Texture& texture, RenderSurface& surface) const {
+	SDL_RenderCopy(self_renderer, texture.GetDataPointer(), NULL, surface.GetRectData());
 }
 
 // Models
-
-void Renderer::DrawRectangle(DrawMode mode, RenderSurface& surface) {
+void Window::DrawRectangle(DrawMode mode, RenderSurface& surface) const {
 	switch (mode) {
 	case DrawMode::FILL:
-		SDL_RenderFillRect(renderer, surface.data_rect());
+		SDL_RenderFillRect(self_renderer, surface.GetRectData());
 		break;
 
 	case DrawMode::OUTLINE:
-		SDL_RenderDrawRect(renderer, surface.data_rect());
+		SDL_RenderDrawRect(self_renderer, surface.GetRectData());
 	}
 }
 
-void Renderer::DrawTriangle(DrawMode mode, RenderSurface& surface) {
-}
+void Window::DrawTriangle(DrawMode mode, RenderSurface& surface) const {}
 
-int RoundToMultipleOfEight(int i) {
-	return (i + (8 - 1)) & -8;
-}
-
-void Renderer::DrawCircle(DrawMode mode, RenderSurface& surface) {
+inline int RoundToMultipleOfEight(int i) { return (i + (8 - 1)) & -8; }
+void Window::DrawCircle(DrawMode mode, RenderSurface& surface) const {
 	switch (mode) {
 	case DrawMode::FILL:
-		filledCircleRGBA(renderer, (short)surface.x(), (short)surface.y(), surface.height() / 2, 0xFF, 0xFF, 0xFF, 0xFF);
+		filledCircleRGBA(self_renderer, surface.GetX(), surface.GetY(), surface.GetHeight() / 2, 0xFF, 0xFF, 0xFF, 0xFF);
 		break;
 
 	case DrawMode::OUTLINE:
-		circleRGBA(renderer, (short)surface.x(), (short)surface.y(), surface.height() / 2, 0xFF, 0xFF, 0xFF, 0xFF);
+		circleRGBA(self_renderer, surface.GetX(), surface.GetY(), surface.GetHeight() / 2, 0xFF, 0xFF, 0xFF, 0xFF);
 		break;
 	}
 }
 
-void Renderer::Draw(ObjectShape shape, DrawMode mode, RenderSurface& surface) {
+void Window::Draw(ObjectShape shape, DrawMode mode, RenderSurface& surface) const {
 	switch (shape) {
 	case ObjectShape::RECTANGLE:
 		DrawRectangle(mode, surface);
@@ -90,54 +116,6 @@ void Renderer::Draw(ObjectShape shape, DrawMode mode, RenderSurface& surface) {
 		DrawCircle(mode, surface);
 		break;
 	}
-}
-
-void Renderer::Destroy() {
-	SDL_DestroyRenderer(renderer);
-}
-
-SDL_Renderer* Renderer::data() const { return renderer; }
-
-Window::Window() {}
-Window::Window(std::string window_title, unsigned int window_width,
-	unsigned int window_height) {
-	window = SDL_CreateWindow(
-		window_title.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		window_width, window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-	if (!window) {
-		throw RuntimeError("Failed To Create Window!" + std::string(SDL_GetError()));
-	}
-}
-Window::Window(SDL_Window* win) {
-	if (!win) {
-		throw RuntimeError("Failed To Create Window With A Null Window!");
-	}
-
-	window = win;
-}
-
-Window::~Window() { Destroy(); }
-
-SDL_Window* Window::data() const { return window; }
-
-int Window::GetCenterX() {
-	int x;
-	SDL_GetWindowSize(window, &x, NULL);
-	return x / 2;
-}
-
-int Window::GetCenterY() {
-	int y;
-	SDL_GetWindowSize(window, NULL, &y);
-	return y / 2;
-}
-
-int Window::GetRelativeCenterX(int size_x) {
-	return GetCenterX() - (size_x / 2);
-}
-
-int Window::GetRelativeCenterY(int size_y) {
-	return GetCenterY() - (size_y / 2);
 }
 
 RenderSurface::RenderSurface(int x, int y, unsigned int width, unsigned int height) :
@@ -180,5 +158,14 @@ void RenderSurface::Resize(unsigned int width, unsigned int height) {
 	rect->h = height;
 }
 
-SDL_Rect* RenderSurface::data_rect() const { return rect; }
-SDL_Surface* RenderSurface::data_suf() const { return suf; }
+void RenderSurface::SetX(int x) { rect->x = x; }
+int RenderSurface::GetX() const { return rect->x; }
+void RenderSurface::SetY(int y) { rect->y = y; }
+int RenderSurface::GetY() const { return rect->y; }
+void RenderSurface::SetWidth(int width) { rect->w = width; }
+int RenderSurface::GetWidth() const { return rect->w; }
+void RenderSurface::SetHeight(int height) { rect->h = height; }
+int RenderSurface::GetHeight() const { return rect->h; }
+
+SDL_Rect* RenderSurface::GetRectData() const { return rect; }
+SDL_Surface* RenderSurface::GetSurfaceData() const { return suf; }

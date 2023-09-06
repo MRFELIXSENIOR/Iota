@@ -1,5 +1,5 @@
 #include "Property.hpp"
-#include "Type.hpp"
+#include "TypeClass.hpp"
 #include "Function.hpp"
 #include "../IotaException.hpp"
 
@@ -9,7 +9,7 @@ using namespace Mono;
 void Property::data() {
 	Function get_fn = GetGetMethod();
 	type = get_fn.GetReturnType();
-	owner = Type(mono_property_get_parent(self));
+	owner = TypeClass(mono_property_get_parent(self));
 	name = mono_property_get_name(self);
 }
 
@@ -19,9 +19,9 @@ Property::Property(MonoProperty* mono_property) : self(mono_property) {
 	data();
 }
 
-Property::Property(const Type& klass, const std::string& name) : self(mono_class_get_property_from_name(klass.get_class_ptr(), name_.c_str())) {
+Property::Property(const TypeClass& klass, const std::string& name) : self(mono_class_get_property_from_name(klass.GetClassPointer(), name.c_str())) {
 	if (!self)
-		throw RuntimeError("Cannot Get Property of name: " + name + " on class: " + klass.get_name());
+		throw RuntimeError("Cannot Get Property of name: " + name + " on class: " + klass.GetName());
 	data();
 }
 
@@ -34,10 +34,10 @@ Function Property::GetSetMethod() const {
 }
 
 
-const Type& Property::GetOwner() const { return owner; }
-const Type& Property::GetType() const { return type; }
+const TypeClass& Property::GetOwner() const { return owner; }
+const TypeClass& Property::GetType() const { return type; }
 
-bool Property::is_valid() { return self != nullptr; }
+bool Property::IsValid() { return self != nullptr; }
 
-const std::string& Property::get_name() const { return name; }
-MonoProperty* Property::get_mono_ptr() const { return self; }
+const std::string& Property::GetName() const { return name; }
+MonoProperty* Property::GetDataPointer() const { return self; }

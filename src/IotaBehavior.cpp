@@ -12,13 +12,14 @@ static uint64_t behav_id;
 
 ActorMap& iota::GetActorMap() { return actor_map; }
 
-GameBehavior::GameBehavior() {
-	if (SDL_GetKeyboardFocus()) {
-		actor_window = std::make_unique<Window>(SDL_GetKeyboardFocus());
-		actor_renderer = std::make_unique<Renderer>(*actor_window, true);
+void GameBehavior::ActorInit() {
+	if (SDL_GetMouseFocus()) {
+		actor_window = std::make_shared<Window>(SDL_GetMouseFocus());
 		id = behav_id++;
 	}
+}
 
+GameBehavior::GameBehavior() {
 	auto&& a = std::make_pair(id, static_cast<GameBehavior*>(this));
 	GetActorMap().insert(a);
 }

@@ -9,9 +9,9 @@ namespace iota {
 			explicit String(const Object& object);
 			explicit String(const std::string& str);
 
-			const std::string& utf8() const;
-			const std::u16string& utf16() const;
-			const std::u32string& utf32() const;
+			const std::string& ToUTF8() const;
+			const std::u16string& ToUTF16() const;
+			const std::u32string& ToUTF32() const;
 		};
 	}
 }

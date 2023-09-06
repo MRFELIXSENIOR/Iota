@@ -11,12 +11,13 @@ Object::Object(MonoObject* mono_obj): self(mono_obj) {
 		throw RuntimeError("Cannot Create Object Reference");
 }
 
-Object::Object(const Type& cl_ref): self (mono_object_new(mono_get_root_domain(), cl_ref.get_class_ptr())) {
+Object::Object(const TypeClass& cl_ref): self (mono_object_new(mono_get_root_domain(), cl_ref.GetClassPointer())) {
 	mono_runtime_object_init(self);
 	if (!self)
-		throw RuntimeError("Cannot Create Object of class: " + cl_ref.get_name());
+		throw RuntimeError("Cannot Create Object of class: " + cl_ref.GetName());
 }
 
-MonoObject* Object::get_mono_ptr() const { return self; }
-bool Object::is_valid() { return self != nullptr; }
-const Type& Object::GetType() const { return type; }
+bool Object::IsValid() { return self != nullptr; }
+
+MonoObject* Object::GetDataPointer() const { return self; }
+const TypeClass& Object::GetClass() const { return klass; }

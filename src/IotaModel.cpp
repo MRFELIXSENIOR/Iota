@@ -12,8 +12,8 @@ using namespace iota;
 Object::Object(): 
 	shape(DEFAULT_SHAPE), 
 	RenderSurface(
-		Application::GetWindow().GetRelativeCenterX(100),
-		Application::GetWindow().GetRelativeCenterY(100),
+		Window::GetCurrentFocusedWindow().GetCenterX(100),
+		Window::GetCurrentFocusedWindow().GetCenterY(100),
 		100,
 		100
 	),
@@ -23,8 +23,8 @@ Object::Object():
 Object::Object(ObjectShape sh): 
 	shape(sh), 
 	RenderSurface(
-		Application::GetWindow().GetRelativeCenterX(100),
-		Application::GetWindow().GetRelativeCenterY(100),
+		Window::GetCurrentFocusedWindow().GetCenterX(100),
+		Window::GetCurrentFocusedWindow().GetCenterY(100),
 		100,
 		100
 	),
@@ -64,18 +64,13 @@ void Object::SetColorRGB(uint8_t red, uint8_t green, uint8_t blue) {
 	color.blue = blue;
 }
 
-Color Object::GetColor() { return color; }
-
-void Object::SetX(PosType pos_x) { x() = pos_x; }
-void Object::SetY(PosType pos_y) { y() = pos_y; }
-void Object::SetWidth(PosType w) { width() = w; }
-void Object::SetHeight(PosType h) { height() = h; }
+Color Object::GetColor() const { return color; }
 
 void Object::Load() {}
 
 void Object::Render() {
-	actor_renderer->SetDrawColor(color);
-	actor_renderer->Draw(
+	actor_window->SetDrawColor(color);
+	actor_window->Draw(
 		shape,
 		Basic::DrawMode::FILL,
 		*this
@@ -86,8 +81,8 @@ void Object::Update() {}
 
 GUIObject::GUIObject():
 	RenderSurface(
-		Application::GetWindow().GetRelativeCenterX(100),
-		Application::GetWindow().GetRelativeCenterY(100),
+		Window::GetCurrentFocusedWindow().GetCenterX(100),
+		Window::GetCurrentFocusedWindow().GetCenterY(100),
 		100,
 		100
 	),

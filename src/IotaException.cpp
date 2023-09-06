@@ -13,26 +13,26 @@
 using namespace iota;
 using namespace Mono;
 
-MonoDomain* exc_domain = mono_get_root_domain();
-MonoAssembly* exc_assembly = mono_domain_assembly_open(exc_domain, "iota.Exceptions.dll");
-MonoImage* exc_img = mono_assembly_get_image(exc_assembly);
+struct Info {
+	std::string class_name;
+	std::string msg;
+	std::string stack_trace;
+};
 
 Exception::Exception(MonoObject* mono_exc_object) {
 	Object obj(mono_exc_object);
-	Type type = obj.GetType();
+	TypeClass klass = obj.GetClass();
 
-	std::string msg = type.GetProperty("Message").Get();
+	class_name = klass.GetName();
+	klass.GetProperty("Message").Get(message);
+	klass.GetProperty("StackTrace").Get(stack_trace);
 }
 
-void ExceptionReference::Raise() {
-	if (!valid()) return;
-	mono_raise_exception(mono_exception);
+const std::string& Exception::GetClassName() const noexcept { return class_name; }
+const std::string& Exception::GetMessage() const noexcept { return message; }
+const std::string& Exception::GetStacktrace() const noexcept { return stack_trace; }
+
+void Mono::DefaultExceptionHandler(const Exception& exc) {
+	std::cerr << "[Iota] [Mono Error] [" << exc.GetClassName() << "] " << exc.GetMessage() << '\n';
 }
 
-MonoException* ExceptionReference::get_mono_ptr() const {
-	return mono_exception;
-}
-
-bool ExceptionReference::valid() {
-	return mono_exception != nullptr
-}
