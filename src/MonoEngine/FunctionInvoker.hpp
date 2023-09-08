@@ -51,8 +51,8 @@ namespace iota {
 		}
 
 		struct InvokeResult {
-			std::optional<Exception> maybe_exc;
-			bool success;
+			std::optional<Exception> error = std::nullopt;
+			bool success = false;
 		};
 
 		template <IsInvokable T>
@@ -89,7 +89,7 @@ namespace iota {
 			void Invoke(const Object* obj, const ExceptionHandler& exc_handler, Args... args) {
 				MonoObject* mobj = nullptr;
 				if (obj) {
-					mobj = obj->GetPointer();
+					mobj = obj->GetDataPointer();
 					self = mono_object_get_virtual_method(mobj, self);
 				}
 
@@ -103,11 +103,11 @@ namespace iota {
 					if (exc) {
 						Exception exc_obj(exc);
 						exc_handler(exc_obj);
-						result.maybe_exc = std::make_optional(exc_obj);
+						result.error = std::make_optional(exc_obj);
 						result.success = false;
 					}
 
-					result.maybe_exc = std::nullopt;
+					result.error = std::nullopt;
 					result.success = true;
 				};
 
@@ -144,7 +144,7 @@ namespace iota {
 			RT Invoke(const Object* obj, const ExceptionHandler& exc_handler, Args... args) {
 				MonoObject* mobj = nullptr;
 				if (obj) {
-					mobj = obj->GetPointer();
+					mobj = obj->GetDataPointer();
 					self = mono_object_get_virtual_method(mobj, self);
 				}
 
@@ -158,11 +158,11 @@ namespace iota {
 					if (exc) {
 						Exception exc_obj(exc);
 						exc_handler(exc_obj);
-						result.maybe_exc = std::make_optional(exc_obj);
+						result.error = std::make_optional(exc_obj);
 						result.success = false;
 					}
 
-					result.maybe_exc = std::nullopt;
+					result.error = std::nullopt;
 					result.success = true;
 
 					return ret_val;

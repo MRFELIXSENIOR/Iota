@@ -36,7 +36,7 @@ namespace iota {
 					out_ptr = &mobj_val;
 
 				if (obj != nullptr) {
-					MonoObject* obj_ptr = obj->GetPointer();
+					MonoObject* obj_ptr = obj->GetDataPointer();
 					mono_field_get_value(obj_ptr, self, out_ptr);
 				}
 				else {
@@ -55,7 +55,7 @@ namespace iota {
 				auto set_val = GetMonoValue(mono_val);
 
 				if (obj) {
-					MonoObject* obj_ptr = obj->GetPointer();
+					MonoObject* obj_ptr = obj->GetDataPointer();
 					mono_field_set_value(obj_ptr, self, set_val);
 				}
 				else {

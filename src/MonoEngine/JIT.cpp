@@ -1,4 +1,5 @@
 #include "JIT.hpp"
+#include "InternalCall.hpp"
 #include "TypeClass.hpp"
 #include "Object.hpp"
 #include "Context.hpp"

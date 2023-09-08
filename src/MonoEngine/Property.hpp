@@ -16,7 +16,6 @@ namespace iota {
 		private:
 			MonoProperty* self;
 			TypeClass type;
-			TypeClass owner;
 			std::string name;
 
 			void data();
@@ -41,7 +40,6 @@ namespace iota {
 				invoker(value);
 			}
 
-			const TypeClass& GetOwner() const;
 			const TypeClass& GetType() const;
 
 			bool IsValid();

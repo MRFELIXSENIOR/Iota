@@ -42,7 +42,7 @@ namespace iota {
 			using UnboxedType = MonoObject*;
 			using BoxedType = MonoObject*;
 
-			static UnboxedType ToMonoType(const CppType& obj) { return obj.GetPointer(); }
+			static UnboxedType ToMonoType(const CppType& obj) { return obj.GetDataPointer(); }
 			static CppType FromUnboxedType(const UnboxedType& obj) { return Object(obj); }
 			static CppType FromBoxedType(const BoxedType& obj) { return Object(obj); }
 		};
@@ -53,7 +53,7 @@ namespace iota {
 			using UnboxedType = MonoObject*;
 			using BoxedType = MonoObject*;
 			static UnboxedType ToMonoType(const CppType& obj) {
-				return String(obj).GetPointer();
+				return String(obj).GetDataPointer();
 			}
 
 			static CppType FromUnboxedType(const UnboxedType& obj) {
