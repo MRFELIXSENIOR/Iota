@@ -86,6 +86,11 @@ void Application::Start() {
 	}
 
 	const auto& scripts = GetScripts();
+	Mono::AddInternalCalls(
+		Mono::WrapCall("Iota.NativeCall::IsInitialized", Application::IsInitialized),
+		Mono::WrapCall("Iota.NativeCall::IsRunning", Application::IsRunning),
+		Mono::WrapCall("Iota.NativeCall::SetFrameLimit", Application::SetFrameLimit)
+		);
 	Mono::RunScript(scripts);
 
 	app_running = true;

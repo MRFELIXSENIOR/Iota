@@ -102,7 +102,7 @@ Result Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path, c
 		script_result.push_back({ path, true });
 	}
 
-	return std::move(script_result);
+	return script_result;
 }
 
  Result Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path) {

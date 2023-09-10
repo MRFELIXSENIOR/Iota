@@ -33,7 +33,7 @@ namespace iota {
 			bool result;
 		};
 
-		using Result = const std::vector<RunResult>&;
+		using Result = const std::vector<RunResult>;
 		Result RunScript(const std::vector<std::filesystem::path>& scripts_path, const ExceptionHandler& exc_callback);
 		Result RunScript(const std::vector<std::filesystem::path>& scripts_path);
 	}

@@ -18,7 +18,10 @@ set(CSHARP_SRC_DIR ${SRC_DIR}/mono)
 set(MONO_SRC_DIR ${SRC_DIR}/MonoEngine)
 set(DEBUG_DIR ${CMAKE_SOURCE_DIR}/debug/x64-Debug)
 
-file(GLOB CSHARP_SRC_FILES ${CSHARP_SRC_DIR}/*.cs)
+set(CSHARP_SRC_FILES
+	"${CSHARP_SRC_DIR}/Iota.Application.cs"
+	"${CSHARP_SRC_DIR}/Iota.Exceptions.cs"
+)
 
 set(ASSEMBLY_LIST)
 foreach(CSHARP_SRC_FILE ${CSHARP_SRC_FILES})
