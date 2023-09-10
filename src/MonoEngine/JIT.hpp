@@ -21,13 +21,6 @@ namespace iota {
 			void Clean();
 		}
 
-		struct CompileOption {
-			std::vector<std::filesystem::path> files; //paths to c# scripts
-
-			std::vector<std::string> references; //references name
-			std::vector<std::filesystem::path> ref_locations; //references locations
-		};
-
 		struct RunResult {
 			std::filesystem::path script_file_path;
 			bool result;

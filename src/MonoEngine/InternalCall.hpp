@@ -10,8 +10,11 @@
 
 namespace iota {
 	namespace Mono {
+		template <typename Fn>
+		struct InternalCall : public InternalCall<std::function<Fn>> {};
+
 		template <typename RT, typename... Args>
-		struct InternalCall {
+		struct InternalCall<RT(Args...)> {
 			using FunctionPtrType = RT(*)(Args...);
 
 			template <typename T>

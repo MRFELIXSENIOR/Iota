@@ -19,7 +19,7 @@ namespace Iota
 	{
 		public static bool IsInitialized() { return NativeCall.IsInitialized(); }
 		public static bool IsRunning() { return NativeCall.IsRunning(); }
-		public static void SetFPS(uint fps)
+		public static void SetFrameLimit(uint fps)
 		{
 			NativeCall.SetFrameLimit(fps);
 		}

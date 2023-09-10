@@ -8,6 +8,7 @@
 
 #include <unordered_map>
 #include <cstdlib>
+#include <vector>
 #include <format>
 #include <iostream>
 
@@ -18,8 +19,14 @@ using namespace JIT;
 static MonoDomain* jit_domain;
 
 static void IotaLogCallback(const char* log_domain, const char* log_level, const char* message, mono_bool fatal, void* userdata) {
-	std::cout << std::format("[{}] [{}] {}", log_domain, log_level, message) << '\n';
+	std::string dom = (log_domain != nullptr) ? log_domain : "HIDDEN";
+	std::cout << std::format("[{}] [{}] {}", dom, log_level, message) << '\n';
 }
+
+static std::vector<std::string> references {
+	"Iota.Application.dll",
+	"Iota.Exceptions.dll"
+};
 
 void JIT::Initialize(bool enable_debug) {
 	mono_set_dirs(nullptr, nullptr); //system installation
@@ -47,22 +54,19 @@ inline std::string quote_wrap(const std::string& str) {
 	return "\"" + str + "\"";
 }
 
-int compile(CompileOption option, bool debug) {
+int compile(std::vector<std::filesystem::path> files, bool debug) {
 	std::string cmd = "csc";
-	for (auto& path : option.files) {
+	for (auto& path : files) {
 		cmd += " ";
 		cmd += quote_wrap(path.string());
 	}
 
-	cmd += " -t:library";
-	if (!option.references.empty()) {
-		cmd += " -r:";
-		for (auto& ref : option.references) {
-			cmd += ref;
-			cmd += ",";
-		}
-		cmd.pop_back();
+	cmd += " -t:library -lib:lib/mono -reference:";
+	for (auto& ref : references) {
+		cmd += ref;
+		cmd += ",";
 	}
+	cmd.pop_back();
 
 	if (debug) {
 		cmd += " -debug";
@@ -79,10 +83,7 @@ int compile(CompileOption option, bool debug) {
 }
 
 Result Mono::RunScript(const std::vector<std::filesystem::path>& scripts_path, const ExceptionHandler& exc_callback) {
-	CompileOption opt;
-	opt.files = scripts_path;
-	compile(opt, false);
-
+	compile(scripts_path, false);
 	Context context("Iota-ScriptAssembly.dll");
 
 	std::vector<RunResult> script_result;

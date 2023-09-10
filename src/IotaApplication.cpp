@@ -85,6 +85,7 @@ void Application::Start() {
 		return;
 	}
 
+	app_running = true;
 	const auto& scripts = GetScripts();
 	Mono::AddInternalCalls(
 		Mono::WrapCall("Iota.NativeCall::IsInitialized", Application::IsInitialized),
@@ -93,7 +94,6 @@ void Application::Start() {
 		);
 	Mono::RunScript(scripts);
 
-	app_running = true;
 	Uint32 framestart;
 	float frametime;
 
