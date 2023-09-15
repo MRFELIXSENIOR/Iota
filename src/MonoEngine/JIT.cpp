@@ -41,6 +41,7 @@ void JIT::Initialize(bool enable_debug) {
 	}
 
 	mono_trace_set_log_handler(IotaLogCallback, nullptr);
+	mono_set_crash_chaining(true);
 
 	jit_domain = mono_jit_init("IotaJITDomain");
 	mono_thread_set_main(mono_thread_current());

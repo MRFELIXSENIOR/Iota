@@ -57,7 +57,6 @@ add_library(
 	"${MONO_SRC_DIR}/JIT.cpp"
 	"${MONO_SRC_DIR}/TypeTraits.cpp"
 	"${MONO_SRC_DIR}/Conversion.cpp"
-	"${MONO_SRC_DIR}/InternalCall.cpp"
 	"${MONO_SRC_DIR}/Context.cpp"
 	"${MONO_SRC_DIR}/TypeClass.cpp"
 	"${MONO_SRC_DIR}/Object.cpp"

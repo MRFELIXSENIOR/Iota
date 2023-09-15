@@ -15,6 +15,7 @@ namespace iota {
 		struct Property final {
 		private:
 			MonoProperty* self;
+			TypeClass owner;
 			TypeClass type;
 			std::string name;
 
@@ -31,13 +32,15 @@ namespace iota {
 			requires std::is_assignable<T&, T&&>::value
 			void Get(T& output) const {
 				Invoker<T()> invoker(GetGetMethod());
-				output = invoker();
+				auto obj = owner.CreateInstance();
+				output = invoker(obj);
 			}
 
 			template <typename T>
 			void Set(const T& value) const {
 				Invoker<void(const T&)> invoker(GetSetMethod());
-				invoker(value);
+				auto obj = owner.CreateInstance();
+				invoker(obj, value);
 			}
 
 			const TypeClass& GetType() const;

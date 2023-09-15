@@ -10,57 +10,25 @@
 
 namespace iota {
 	namespace Mono {
+		template <typename T>
+		using ArgType = ConvertMonoType<std::decay_t<T>>;
+
+		template <typename T>
+		using BoxedArgType = typename ArgType<T>::BoxedType;
+
 		template <typename Fn>
 		struct InternalCall : public InternalCall<std::function<Fn>> {};
 
 		template <typename RT, typename... Args>
 		struct InternalCall<RT(Args...)> {
-			using FunctionPtrType = RT(*)(Args...);
-
-			template <typename T>
-			using ArgType = ConvertMonoType<std::decay_t<T>>;
-
-			template <typename T>
-			using BoxedType = typename ArgType<T>::BoxedType;
-
-			using ReturnType = ConvertMonoType<std::decay_t<RT>>;
-			using CppType = typename ReturnType::CppType;
-
-			RT(*function_ptr)(Args...);
-			void* casted_function_ptr;
+			void* wrapped_function_ptr;
 			std::string name;
-
-			CppType Call(BoxedType<Args>... args) {
-				RT&& value = function_ptr(ArgType<Args>::FromBoxedType(std::move(args))...);
-				return ReturnType::ToMonoType(value);
-			}
-
-			CppType operator()(BoxedType<Args>... args) {
-				return Call(std::forward<BoxedType<Args>>(args)...);
-			}
 		};
 
 		template <typename... Args>
 		struct InternalCall <void(Args...)> {
-			using FunctionPtrType = void(*)(Args...);
-
-			template <typename T>
-			using ArgType = ConvertMonoType<std::decay_t<T>>;
-
-			template <typename T>
-			using BoxedType = typename ArgType<T>::BoxedType;
-
-			void(*function_ptr)(Args...);
-			void* casted_function_ptr;
+			void* wrapped_function_ptr;
 			std::string name;
-
-			void Call(BoxedType<Args>... args) {
-				function_ptr(ArgType<Args>::FromBoxedType(std::move(args))...);
-			}
-
-			void operator()(BoxedType<Args>... args) {
-				Call(std::forward<BoxedType<Args>>(args)...);
-			}
 		};
 
 		template <typename Fn>
@@ -68,25 +36,45 @@ namespace iota {
 
 		template <typename RT, typename... Args>
 		InternalCall<RT(Args...)> WrapCall(const std::string& name, RT(*func_ptr)(Args...)) {
+			using ReturnType = ConvertMonoType<std::decay_t<RT>>;
+			using UnboxedRT = typename ReturnType::UnboxedType;
+
 			InternalCall<RT(Args...)> call{};
-			call.casted_function_ptr = reinterpret_cast<void*>(func_ptr);
-			call.function_ptr = func_ptr;
 			call.name = name;
+			std::function<UnboxedRT(BoxedArgType<Args>...)> wrapped = [&](BoxedArgType<Args>... args) -> UnboxedRT {
+				RT&& value = func_ptr(ArgType<Args>::FromBoxedType(std::move(args))...);
+				return ReturnType::ToMonoType(value);
+			};
+
+			call.wrapped_function_ptr = reinterpret_cast<void*>(wrapped.target<UnboxedRT(*)(BoxedArgType<Args>...)>());
 			return call;
+		}
+
+		template <typename RT, typename... Args>
+		auto WrapCall(const std::string& name, std::function<RT(Args...)> func) {
+			return WrapCall(name, func.target<RT(*)(Args...)>());
 		}
 
 		template <typename... Args>
 		InternalCall<void(Args...)> WrapCall(const std::string& name, void(*func_ptr)(Args...)) {
 			InternalCall<void(Args...)> call{};
-			call.casted_function_ptr = reinterpret_cast<void*>(func_ptr);
-			call.function_ptr = func_ptr;
 			call.name = name;
+			std::function<void(BoxedArgType<Args>...)> wrapped = [&](BoxedArgType<Args>... args) -> void {
+				func_ptr(ArgType<Args>::FromBoxedType(std::move(args))...);
+			};
+
+			call.wrapped_function_ptr = reinterpret_cast<void*>(wrapped.target<void(*)(BoxedArgType<Args>...)>());
 			return call;
+		}
+
+		template <typename... Args>
+		auto WrapCall(const std::string& name, std::function<void(Args...)> func) {
+			return WrapCall(name, func.target<void(*)(Args...)>());
 		}
 
 		template <typename Signature>
 		void AddInternalCall(InternalCall<Signature> call) {
-			mono_add_internal_call(call.name.c_str(), call.casted_function_ptr);
+			mono_add_internal_call(call.name.c_str(), call.wrapped_function_ptr);
 		}
 
 		template <typename... Signatures>

@@ -33,6 +33,12 @@ namespace iota {
 		uint64_t GetID();
 	};
 
-	using ActorMap = std::map<uint64_t, GameBehavior*>;
+	struct ActorMap : public std::map<uint64_t, GameBehavior*>{
+	public:
+		void Load() const;
+		void Render() const;
+		void Update() const;
+	};
+
 	ActorMap& GetActorMap();
 }

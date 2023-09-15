@@ -24,9 +24,9 @@ namespace iota {
 
 			~EventSignal() {}
 
-			template <typename T>
-			requires IsCallable<T, Args...>
-			void Connect(T&& fn) {
+			template <typename Fn>
+			requires IsCallable<Fn, Args...>
+			void Connect(Fn&& fn) {
 				signal.connect(fn);
 			}
 

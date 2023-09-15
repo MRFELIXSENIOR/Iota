@@ -74,7 +74,7 @@ AccessModifier Function::GetAccessModifier() const {
 	return filter(flags);
 }
 
-const TypeClass& Function::GetReturnType() const {
+TypeClass Function::GetReturnType() const {
 	MonoType* rt = mono_signature_get_return_type(sig);
 	return TypeClass(rt);
 }

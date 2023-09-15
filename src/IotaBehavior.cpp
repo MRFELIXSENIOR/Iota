@@ -10,6 +10,24 @@ using namespace iota;
 static ActorMap actor_map;
 static uint64_t behav_id;
 
+void ActorMap::Load() const {
+	for (auto& a : *this) {
+		a.second->Load();
+	}
+}
+
+void ActorMap::Render() const {
+	for (auto& a : *this) {
+		a.second->Render();
+	}
+}
+
+void ActorMap::Update() const {
+	for (auto& a : *this) {
+		a.second->Update();
+	}
+}
+
 ActorMap& iota::GetActorMap() { return actor_map; }
 
 void GameBehavior::ActorInit() {
@@ -21,7 +39,7 @@ void GameBehavior::ActorInit() {
 
 GameBehavior::GameBehavior() {
 	auto&& a = std::make_pair(id, static_cast<GameBehavior*>(this));
-	GetActorMap().insert(a);
+	actor_map.insert(a);
 }
 
 GameBehavior::~GameBehavior() {}

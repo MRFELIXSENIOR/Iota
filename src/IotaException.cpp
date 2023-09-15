@@ -19,18 +19,20 @@ struct Info {
 	std::string stack_trace;
 };
 
-Exception::Exception(MonoObject* mono_exc_object) {
+Exception::Exception(MonoObject* mono_exc_object): std::runtime_error("") {
 	Object obj(mono_exc_object);
 	TypeClass klass = obj.GetClass();
-
 	class_name = klass.GetName();
+
 	klass.GetProperty("Message").Get(message);
-	klass.GetProperty("StackTrace").Get(stack_trace);
+}
+
+const char* Exception::what() const noexcept {
+	return message.c_str();
 }
 
 const std::string& Exception::GetClassName() const noexcept { return class_name; }
 const std::string& Exception::GetMessage() const noexcept { return message; }
-const std::string& Exception::GetStacktrace() const noexcept { return stack_trace; }
 
 void Mono::DefaultExceptionHandler(const Exception& exc) {
 	std::cerr << "[Iota] [Mono Error] [" << exc.GetClassName() << "] " << exc.GetMessage() << '\n';

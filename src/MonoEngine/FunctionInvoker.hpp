@@ -78,7 +78,7 @@ namespace iota {
 				Invoke(nullptr, exc_handler, std::forward<Args>(args)...);
 			}
 
-			void operator()(Args&&... args) {
+			void operator()(Args... args) {
 				Invoke(nullptr, DefaultExceptionHandler, std::forward<Args>(args)...);
 			}
 
@@ -105,6 +105,7 @@ namespace iota {
 						exc_handler(exc_obj);
 						result.error = std::make_optional(exc_obj);
 						result.success = false;
+						return;
 					}
 
 					result.error = std::nullopt;
@@ -151,20 +152,21 @@ namespace iota {
 				auto tuple =
 					std::make_tuple(ConvertMonoType<std::decay_t<Args>>::ToMonoType(std::forward<Args>(args))...);
 
-				auto caller = [&](auto... inv_args) {
+				auto caller = [&](auto... inv_args) -> MonoObject* {
 					std::vector<void*> argsv = { std::addressof(inv_args)... };
 					MonoObject* exc = nullptr;
 					MonoObject* ret_val = mono_runtime_invoke(self, mobj, argsv.data(), &exc);
-					if (exc) {
+					if (exc != nullptr) {
 						Exception exc_obj(exc);
 						exc_handler(exc_obj);
 						result.error = std::make_optional(exc_obj);
 						result.success = false;
+
+						throw exc_obj;
 					}
 
 					result.error = std::nullopt;
 					result.success = true;
-
 					return ret_val;
 				};
 

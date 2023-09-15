@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Iota
 {
-	public class NativeCall
+	public class Application
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		public static extern bool IsInitialized();
@@ -12,16 +12,9 @@ namespace Iota
 		public static extern bool IsRunning();
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		public static extern void SetFrameLimit(uint frameLimit);
-	}
+		public static extern void SetFrameLimit(uint fps);
 
-	public class Application
-	{
-		public static bool IsInitialized() { return NativeCall.IsInitialized(); }
-		public static bool IsRunning() { return NativeCall.IsRunning(); }
-		public static void SetFrameLimit(uint fps)
-		{
-			NativeCall.SetFrameLimit(fps);
-		}
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		public static extern void Print(string msg);
 	}
 }

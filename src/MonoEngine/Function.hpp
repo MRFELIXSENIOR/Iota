@@ -44,7 +44,7 @@ namespace iota {
 			const std::string& GetName() const;
 
 			AccessModifier GetAccessModifier() const;
-			const TypeClass& GetReturnType() const;
+			TypeClass GetReturnType() const;
 			const std::vector<TypeClass>& GetArgTypes() const;
 		};
 	}

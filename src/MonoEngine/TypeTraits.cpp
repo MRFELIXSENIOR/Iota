@@ -1,4 +1,5 @@
 #include "TypeTraits.hpp"
+#include "../IotaGameInstance.hpp"
 
 using namespace iota;
 using namespace Mono;
@@ -18,7 +19,9 @@ const TypeMap& Mono::GetTypeMap() {
 		{ IndexOf<double>(), { "double", "System.Double" }},
 		{ IndexOf<char16_t>(), { "char", "System.Char" }},
 		{ IndexOf<std::string>(), { "string", "System.String" }},
-		{ IndexOf<void>(), { "void", "System.Void" }}
+		{ IndexOf<void>(), { "void", "System.Void" }},
+
+		{ IndexOf<GameInstance::Instance>(), {"Instance", "Iota.Instance"}},
 	};
 
 	return map;

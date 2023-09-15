@@ -9,6 +9,7 @@ using namespace Mono;
 void Property::data() {
 	Function get_fn = GetGetMethod();
 	type = get_fn.GetReturnType();
+	owner = TypeClass(mono_property_get_parent(self));
 	name = mono_property_get_name(self);
 }
 

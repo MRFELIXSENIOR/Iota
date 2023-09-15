@@ -79,20 +79,15 @@ bool Application::Exit() {
 	return true;
 }
 
+void Print(std::string msg) {
+	std::cout << "print called: " << msg << '\n';
+}
+
 void Application::Start() {
 	if (!app_initialized) {
 		throw RuntimeError("Application Is Not Initialized");
 		return;
 	}
-
-	app_running = true;
-	const auto& scripts = GetScripts();
-	Mono::AddInternalCalls(
-		Mono::WrapCall("Iota.NativeCall::IsInitialized", Application::IsInitialized),
-		Mono::WrapCall("Iota.NativeCall::IsRunning", Application::IsRunning),
-		Mono::WrapCall("Iota.NativeCall::SetFrameLimit", Application::SetFrameLimit)
-		);
-	Mono::RunScript(scripts);
 
 	Uint32 framestart;
 	float frametime;
@@ -100,10 +95,19 @@ void Application::Start() {
 	Window& current_window = Window::GetCurrentFocusedWindow();
 	SDL_RaiseWindow(current_window.GetDataPointer());
 
+	app_running = true;
+	const auto& scripts = GetScripts();
+	Mono::AddInternalCalls(
+		Mono::WrapCall("Iota.Application::IsInitialized", Application::IsInitialized),
+		Mono::WrapCall("Iota.Application::IsRunning", Application::IsRunning),
+		Mono::WrapCall("Iota.Application::SetFrameLimit", Application::SetFrameLimit),
+		Mono::WrapCall("Iota.Application::Print", Print)
+	);
+
+	Mono::RunScript(scripts);
+
 	ActorMap& actor_map = GetActorMap();
-	for (auto& a : actor_map) {
-		a.second->Load();
-	}
+	actor_map.Load();
 
 	while (app_running == true) {
 		framestart = SDL_GetTicks();
@@ -111,9 +115,7 @@ void Application::Start() {
 		Event::PollEvent();
 		SDL_RenderClear(current_window.GetRendererPointer());
 
-		for (auto& a : actor_map) {
-			a.second->Render();
-		}
+		actor_map.Render();
 
 		SDL_SetRenderDrawColor(current_window.GetRendererPointer(), 0, 0, 0, 0);
 		SDL_RenderPresent(current_window.GetRendererPointer());
@@ -121,13 +123,9 @@ void Application::Start() {
 		frametime = (SDL_GetTicks() - framestart) / 1000.0f;
 
 		int delaytime = static_cast<int>((1.0f / app_framelimit) * 1000.0f - frametime);
-		if (delaytime > 0) {
-			SDL_Delay(delaytime);
-		}
+		if (delaytime > 0) SDL_Delay(delaytime);
 
-		for (auto& a : actor_map) {
-			a.second->Update();
-		}
+		actor_map.Update();
 	}
 }
 

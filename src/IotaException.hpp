@@ -22,18 +22,17 @@ namespace iota {
 	};
 
 	namespace Mono {
-
-		struct Exception {
+		struct Exception : public std::runtime_error {
 		public:
 			explicit Exception(MonoObject* mono_exc_object);
 
 			const std::string& GetClassName() const noexcept;
 			const std::string& GetMessage() const noexcept;
-			const std::string& GetStacktrace() const noexcept;
+
+			const char* what() const noexcept override;
 
 		private:
 			std::string message;
-			std::string stack_trace;
 			std::string class_name;
 		};
 
