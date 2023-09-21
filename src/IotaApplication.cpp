@@ -10,6 +10,7 @@
 #include <mutex>
 
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
@@ -29,20 +30,17 @@ bool Application::IsRunning() { return app_running; }
 #define decl_str(v) std::string(v)
 
 bool Application::Initialize(const std::string& window_title, int window_width, int window_height) {
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		throw RuntimeError("SDL Initialization Failure" + std::string(SDL_GetError()));
-		return false;
-	}
 
-	if (IMG_Init(IMG_INIT_PNG) < 0) {
+	if (IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) < 0)
 		throw RuntimeError("SDL_Image Initialization Failure" + std::string(IMG_GetError()));
-		return false;
-	}
 
-	if (TTF_Init() < 0) {
+	if (TTF_Init() < 0)
 		throw RuntimeError("SDL_ttf Initialization Failure" + std::string(TTF_GetError()));
-		return false;
-	}
+
+	if (Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3) < 0 || Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0)
+		throw RuntimeError("SDL_mixer Initialization Failure" + std::string(Mix_GetError()));
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
@@ -59,6 +57,8 @@ bool Application::Exit() {
 
 	std::cout << "Exiting...\n";
 	app_running = false;
+
+	Mix_CloseAudio();
 
 	IMG_Quit();
 	Mix_Quit();

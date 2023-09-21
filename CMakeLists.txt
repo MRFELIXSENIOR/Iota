@@ -33,6 +33,7 @@ include_directories(
 	${SRC_DIR}/libraries
 	${LIB_DIR}/SDL2/include
 	${LIB_DIR}/SDL2_image/include
+	${LIB_DIR}/SDL2_mixer/include
 	${LIB_DIR}/SDL2_ttf/include
 	${LIB_DIR}/SDL2_gfx/include
 )
@@ -42,6 +43,7 @@ target_link_directories(
 	PRIVATE
 	${LIB_DIR}/SDL2
 	${LIB_DIR}/SDL2_image
+	${LIB_DIR}/SDL2_mixer
 	${LIB_DIR}/SDL2_gfx
 	${LIB_DIR}/SDL2_ttf
 )
@@ -52,6 +54,7 @@ target_link_libraries(
 	SDL2
 	SDL2main
 	SDL2_image
+	SDL2_mixer
 	SDL2_ttf
 	SDL2_gfx
 	)
