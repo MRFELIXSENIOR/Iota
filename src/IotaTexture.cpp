@@ -7,24 +7,24 @@
 
 using namespace iota;
 
-Texture::Texture() : texture(nullptr), surface(nullptr) {}
+Texture::Texture() : texture(nullptr) {}
 Texture& Texture::LoadTexture(const std::string& path) {
-	SDL_Texture* result = IMG_LoadTexture(Window::GetCurrentFocusedWindow().GetRendererPointer(), path.c_str());
-	if (!result) {
+	Texture* t;
+	SDL_Texture* result = IMG_LoadTexture(Window::GetCurrentWindow().GetRendererPointer(), path.c_str());
+	if (!result)
 		throw RuntimeError("Texture Load Failure" + std::string(SDL_GetError()));
-	}
 
-	texture = result;
-	return *this;
+	t->texture = result;
+	return *t;
 }
 Texture& Texture::LoadTexture(const std::string& path, const Window& window) {
+	Texture* t = new Texture;
 	SDL_Texture* result = IMG_LoadTexture(window.GetRendererPointer(), path.c_str());
-	if (!result) {
+	if (!result)
 		throw RuntimeError("Texture Load Failure" + std::string(SDL_GetError()));
-	}
 
-	texture = result;
-	return *this;
+	t->texture = result;
+	return *t;
 }
 
 Texture::~Texture() {

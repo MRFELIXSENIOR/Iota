@@ -2,10 +2,7 @@
 #include "IotaException.hpp"
 #include "IotaBasic.hpp"
 #include "IotaEvent.hpp"
-#include "IotaScript.hpp"
 #include "IotaTexture.hpp"
-
-#include "MonoEngine/Engine.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -15,7 +12,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
-#include <SDL_mixer.h>
 
 using namespace iota;
 using namespace Application;
@@ -48,16 +44,10 @@ bool Application::Initialize(const std::string& window_title, int window_width, 
 		return false;
 	}
 
-	if (Mix_Init(MIX_INIT_OGG) < 0) {
-		throw RuntimeError("SDL_mixer Initialization Failure" + std::string(Mix_GetError()));
-		return false;
-	}
-
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
 	app_window = new Window(window_title, window_width, window_height);
-
-	Mono::Initialize();
+	SDL_RaiseWindow(app_window->GetDataPointer());
 
 	app_initialized = true;
 	return true;
@@ -68,67 +58,24 @@ bool Application::Exit() {
 		return false;
 
 	std::cout << "Exiting...\n";
+	app_running = false;
+
 	IMG_Quit();
 	Mix_Quit();
 	TTF_Quit();
 	SDL_Quit();
-	Mono::Clean();
 
 	delete app_window;
-	app_running = false;
 	return true;
 }
 
-void Print(std::string msg) {
-	std::cout << "print called: " << msg << '\n';
-}
-
 void Application::Start() {
-	if (!app_initialized) {
+	if (!app_initialized)
 		throw RuntimeError("Application Is Not Initialized");
-		return;
-	}
-
-	Uint32 framestart;
-	float frametime;
-
-	Window& current_window = Window::GetCurrentFocusedWindow();
-	SDL_RaiseWindow(current_window.GetDataPointer());
 
 	app_running = true;
-	const auto& scripts = GetScripts();
-	Mono::AddInternalCalls(
-		Mono::WrapCall("Iota.Application::IsInitialized", Application::IsInitialized),
-		Mono::WrapCall("Iota.Application::IsRunning", Application::IsRunning),
-		Mono::WrapCall("Iota.Application::SetFrameLimit", Application::SetFrameLimit),
-		Mono::WrapCall("Iota.Application::Print", Print)
-	);
-
-	Mono::RunScript(scripts);
-
-	ActorMap& actor_map = GetActorMap();
-	actor_map.Load();
-
-	while (app_running == true) {
-		framestart = SDL_GetTicks();
-
-		Event::PollEvent();
-		SDL_RenderClear(current_window.GetRendererPointer());
-
-		actor_map.Render();
-
-		SDL_SetRenderDrawColor(current_window.GetRendererPointer(), 0, 0, 0, 0);
-		SDL_RenderPresent(current_window.GetRendererPointer());
-
-		frametime = (SDL_GetTicks() - framestart) / 1000.0f;
-
-		int delaytime = static_cast<int>((1.0f / app_framelimit) * 1000.0f - frametime);
-		if (delaytime > 0) SDL_Delay(delaytime);
-
-		actor_map.Update();
-	}
+	Basic::AppLoop();
 }
 
-void Application::SetFrameLimit(unsigned int target) {
-	app_framelimit = target;
-}
+void Application::SetFrameLimit(unsigned int target) { app_framelimit = target; }
+int Application::GetFrameLimit() { return app_framelimit; }

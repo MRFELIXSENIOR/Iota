@@ -1,23 +1,8 @@
-#include "IotaEngine.h"
-
-using namespace iota;
+#include "main.h"
 
 int main() {
-	bool debug = false;
-
-	if (debug) {
-		try {
-			Application::Initialize("Test Window", 640, 480);
-			Script script("test\\hw.cs");
-			Application::Start();
-		}
-		catch (std::exception exc) {
-			std::cout << exc.what() << '\n';
-		}
-	}
-	else {
-		Application::Initialize("Test Window", 640, 480);
-		Script script("test\\hw.cs");
+	if (Application::Initialize("Test", 1024, 768)) {
+		REGISTER_MAIN(Main);
 		Application::Start();
 	}
 

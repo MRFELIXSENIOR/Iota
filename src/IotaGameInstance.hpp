@@ -1,139 +1,150 @@
 #pragma once
 
 #include "IotaEvent.hpp"
-#include "IotaBehavior.hpp"
+#include "IotaException.hpp"
 
-#include <map>
 #include <unordered_map>
 #include <string>
 #include <type_traits>
-#include <optional>
 #include <concepts>
-#include <typeinfo>
 #include <cstdint>
 
 namespace iota {
-	class Renderer;
-	class Window;
+	namespace Basic {
+		void Load();
+		void Render();
+		void Update();
+		void PollEvent();
+	}
+
 	class Script;
+	class Window;
+	class Instance;
 
-	namespace GameInstance {
-		class Instance;
+	void InternalRegister(Script* base);
 
-		template <typename T>
-		concept IsAssignable = std::is_assignable<T&, T&&>::value;
+	template <typename T>
+	requires std::is_assignable_v<T&, T&&>
+	struct Property {
+	private:
+		T value;
+		Event<T> signal;
+		std::string property_name;
 
-		template <IsAssignable T>
-		struct Property {
-		private:
-			T value;
-			Event::EventSignal<T> signal;
-			std::string property_name;
+	public:
+		Property() = default;
+		explicit Property(T val) : value(val) {}
 
-		public:
-			Property() {}
-			explicit Property(T val) : value(val) {}
-			~Property() {}
+		T Get() const { return value; }
 
-			T Value() const { return value; }
+		void Set(const T& val) const {
+			signal.Fire(value);
+			value = val;
+		}
 
-			void Set(const T& val) const { 
-				signal.Fire(value); 
-				value = val; 
-			}
+		Property<T>& operator=(const T& rhs) const { Set(rhs); }
+		ScriptSignal<T> GetValueChangedSignal() const { return ScriptSignal<T>(signal); }
 
-			Property<T>& operator=(const T& rhs) const { Set(rhs); }
-			Event::EventSignal<T>& GetValueChangedSignal() const { return signal; }
+		const std::string& GetName() const { return property_name; }
 
-			const std::string& GetName() const { return property_name; }
+		bool operator==(const T& rhs) { return (value == rhs); }
+		bool operator!=(const T& rhs) { return (value != rhs); }
+	};
 
-			bool operator==(const T& rhs) { return (value == rhs); }
-			bool operator!=(const T& rhs) { return (value != rhs); }
-		};
-		
-		template<typename T, typename PType>
-		concept IsProperty = std::is_base_of_v<GameInstance::Property<PType>, T>;
+	template<typename T, typename PType>
+	concept IsProperty = std::is_base_of_v<Property<PType>, T>;
 
-		template <typename T>
-		concept IsInstance = std::is_base_of_v<GameInstance::Instance, T>;
+	template <typename T>
+	concept IsInstance = std::is_base_of_v<Instance, T>;
 
-		struct type_info_hash {
-			std::size_t operator()(const std::type_info* type) const {
-				return type->hash_code();
-			}
-		};
+	class ActorInterface {
+	public:
+		virtual void Load() = 0;
+		virtual void Render() = 0;
+		virtual void Update() = 0;
 
-		struct type_info_compare_equal {
-			bool operator()(const std::type_info* first, const std::type_info* second) const {
-				return *first == *second;
-			}
-		};
+	protected:
+		ActorInterface();
 
-		class Instance : protected GameBehavior {
-		public:
-			Property<std::string> name;
+	private:
+		using ActorContType = std::vector<ActorInterface*>;
 
-			Instance();
-			~Instance();
+		void Init();
+		std::shared_ptr<Window> window;
 
-			virtual void Load();
-			virtual void Render();
-			virtual void Update();
+		static ActorContType& GetCont();
 
-			template <IsInstance T>
-			void SetParent(T& p) {
-				Instance* p_new = static_cast<Instance*>(&p);
+		friend void Basic::PollEvent();
+		friend void Basic::Load();
+		friend void Basic::Render();
+		friend void Basic::Update();
+	};
 
-				parent_changed.Fire(*p_new);
-				parent = p_new;
-			}
+	class Instance : public ActorInterface {
+	public:
+		using ActorInterface::ActorInterface;
+		Instance();
+		~Instance();
 
-			template <IsInstance T>
-			T& GetParent() {
-				return *dynamic_cast<T*>(parent);
-			}
+		template <IsInstance T>
+		void SetParent(T& p) {
+			Instance* p_new = static_cast<Instance*>(&p);
 
-			template <IsInstance T>
-			void AddChildren(T& c) {
-				Instance* c_new = static_cast<Instance*>(&c);
+			parent_changed.Fire(*p_new);
+			parent = p_new;
+		}
 
-				child_added.Fire(*c_new);
+		template <IsInstance T>
+		T& GetParent() {
+			if (!parent)
+				throw RuntimeError("Could not GetParent");
+			return *dynamic_cast<T*>(parent);
+		}
 
-				auto&& pair = std::make_pair(&typeid(T), c_new);
-				children.insert(pair);
+		template <IsInstance T>
+		void AddChildren(T& child) {
+			Instance* c_new = static_cast<Instance*>(&child);
+			child_added.Fire(*c_new);
 
-				c_new->SetParent(*this);
-			}
+			auto&& pair = std::make_pair(c_new->Name.Get(), c_new);
+			children.insert(pair);
 
-			template <IsInstance T, typename... Args>
-			void CreateChildren(Args... args) {
-				T* c_new = new T(args...);
-				AddChildren(*c_new);
-			}
+			c_new->SetParent(*this);
+		}
 
-			template <IsInstance T>
-			std::optional<T&> GetChildren(const std::string& name) {
-				const std::type_info* key = &typeid(T);
-				auto rg = children.equal_range(key);
+		template <IsInstance T, typename... Args>
+		void CreateChildren(Args... args) {
+			T* c_new = new T(std::forward<Args>(args)...);
+			AddChildren(*c_new);
+		}
 
-				for (auto it = rg.first; it != rg.second; ++it) {
-					if (it->second.name == name) {
-						return std::make_optional(*dynamic_cast<T*>(it->second));
-					}
-				}
+		template <IsInstance T>
+		T& GetChildren(const std::string& name) {
+			if (children.find(name) != children.end())
+				return *dynamic_cast<T>(children.at(name));
 
-				return std::nullopt;
-			}
+			throw RuntimeError("Could not GetChildren, name: " + name);
+		}
 
-			Event::EventSignal<Instance&> parent_changed;
-			Event::EventSignal<Instance&> child_added;
+		template <IsInstance T>
+		T& operator[](const std::string& name) {
+			return GetChildren(name);
+		}
 
-		private:
-			Instance* parent;
-			std::unordered_multimap<std::type_info*, Instance*, type_info_hash, type_info_compare_equal> children;
+		Property<std::string> Name;
 
-			std::vector<Script*> attached_scripts;
-			friend class Script;
-		};
-	} // namespace GameInstance
+		ScriptSignal<Instance&> ParentChanged;
+		ScriptSignal<Instance&> ChildAdded;
+
+		virtual void Load();
+		virtual void Render();
+		virtual void Update();
+
+	private:
+		Instance* parent;
+		std::unordered_map<std::string, Instance*> children;
+
+		Event<Instance&> parent_changed;
+		Event<Instance&> child_added;
+	};
 } // namespace iota

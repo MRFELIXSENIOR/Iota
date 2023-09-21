@@ -9,87 +9,32 @@ project(Iota)
 
 # Main
 
-set(MONO_ROOT "C:/Program Files/Mono")
-set(MONO_INCLUDE_DIR ${MONO_ROOT}/include/mono-2.0)
-set(MONO_LIB ${MONO_ROOT}/lib)
-
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
-set(CSHARP_SRC_DIR ${SRC_DIR}/mono)
-set(MONO_SRC_DIR ${SRC_DIR}/MonoEngine)
 set(DEBUG_DIR ${CMAKE_SOURCE_DIR}/debug/x64-Debug)
-
-set(CSHARP_SRC_FILES
-	"${CSHARP_SRC_DIR}/Iota.Application.cs"
-	"${CSHARP_SRC_DIR}/Iota.Exceptions.cs"
-)
-
-set(ASSEMBLY_LIST)
-foreach(CSHARP_SRC_FILE ${CSHARP_SRC_FILES})
-	get_filename_component(FILE_NAME ${CSHARP_SRC_FILE} NAME)
-	set(OUT_ASSEMBLY ${DEBUG_DIR}/lib/mono/${FILE_NAME}.dll)
-	string(REPLACE ".cs" "" OUT_ASSEMBLY ${OUT_ASSEMBLY})
-	message(${OUT_ASSEMBLY})
-	
-	set(COMPILE_CMD csc /t:library /out:${OUT_ASSEMBLY} ${CSHARP_SRC_FILE})
-	message(${COMPILE_CMD})
-
-	add_custom_command(
-		OUTPUT ${OUT_ASSEMBLY}
-		COMMAND ${COMPILE_CMD}
-		DEPENDS ${CSHARP_SRC_FILE}
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		COMMENT "Compiling Assembly: ${CSHARP_SRC_FILE}"
-		VERBATIM
-	)
-
-	set(ASM_TARGET IotaAssembly_${FILE_NAME})
-	add_custom_target(${ASM_TARGET} ALL DEPENDS ${OUT_ASSEMBLY})
-	LIST(APPEND ASSEMBLY_LIST ${ASM_TARGET})
-endforeach()
+set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)
 
 add_library(
 	IotaEngine
 	SHARED
-	"${SRC_DIR}/IotaException.cpp"
 	"${SRC_DIR}/IotaApplication.cpp"
-	"${SRC_DIR}/IotaBehavior.cpp"
 	"${SRC_DIR}/IotaGameInstance.cpp"
-	"${MONO_SRC_DIR}/JIT.cpp"
-	"${MONO_SRC_DIR}/TypeTraits.cpp"
-	"${MONO_SRC_DIR}/Conversion.cpp"
-	"${MONO_SRC_DIR}/Context.cpp"
-	"${MONO_SRC_DIR}/TypeClass.cpp"
-	"${MONO_SRC_DIR}/Object.cpp"
-	"${MONO_SRC_DIR}/Field.cpp"
-	"${MONO_SRC_DIR}/Property.cpp"
-	"${MONO_SRC_DIR}/Function.cpp"
-	"${MONO_SRC_DIR}/String.cpp"
-	"${MONO_SRC_DIR}/Engine.cpp"
-	"${SRC_DIR}/IotaScript.cpp"
-	"${SRC_DIR}/IotaEvent.cpp"
 	"${SRC_DIR}/IotaDefs.cpp"
 	"${SRC_DIR}/IotaBasic.cpp"
-	"${SRC_DIR}/IotaKeyboard.cpp"
+	"${SRC_DIR}/IotaInput.cpp"
+	"${SRC_DIR}/IotaSound.cpp"
 	"${SRC_DIR}/IotaTexture.cpp"
-	"${SRC_DIR}/IotaModel.cpp"
+	"${SRC_DIR}/IotaScript.cpp"
 	"${SRC_DIR}/IotaFont.cpp"
 )
 
-set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)
-
-foreach(ASM_TARGET IN LISTS ASSEMBLY_LIST)
-	add_dependencies(IotaEngine ${ASM_TARGET})
-endforeach()
 
 include_directories(
 	${SRC_DIR}
 	${SRC_DIR}/libraries
 	${LIB_DIR}/SDL2/include
 	${LIB_DIR}/SDL2_image/include
-	${LIB_DIR}/SDL2_mixer/include
 	${LIB_DIR}/SDL2_ttf/include
 	${LIB_DIR}/SDL2_gfx/include
-	${MONO_INCLUDE_DIR}
 )
 
 target_link_directories(
@@ -98,9 +43,7 @@ target_link_directories(
 	${LIB_DIR}/SDL2
 	${LIB_DIR}/SDL2_image
 	${LIB_DIR}/SDL2_gfx
-	${LIB_DIR}/SDL2_mixer
 	${LIB_DIR}/SDL2_ttf
-	${MONO_LIB}
 )
 
 target_link_libraries(
@@ -109,10 +52,8 @@ target_link_libraries(
 	SDL2
 	SDL2main
 	SDL2_image
-	SDL2_mixer
 	SDL2_ttf
 	SDL2_gfx
-	mono-2.0-sgen
 	)
 
 add_executable(Iota ${SRC_DIR}/main.cpp)

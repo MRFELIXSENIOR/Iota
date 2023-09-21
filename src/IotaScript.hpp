@@ -2,31 +2,33 @@
 
 #include "IotaGameInstance.hpp"
 
-#include <vector>
-#include <filesystem>
+#include <memory>
 
 namespace iota {
-	class Script : protected GameInstance::Instance {
+	class Script : public Instance {
 	public:
-		Script(const std::filesystem::path& script_path);
+		using Instance::Instance;
+		Script();
 
-		template <GameInstance::IsInstance T>
-		void Attach(T& inst) const {
-			inst.attached_scripts.push_back(this);
-			attached_inst = static_cast<GameInstance::Instance*>(&inst);
-		}
-
-		template <GameInstance::IsInstance T>
-		T& GetAttachedInstance() const {
-			return *dynamic_cast<T*>(attached_inst);
-		}
-
-		const std::filesystem::path& GetPath() const;
-
-	private:
-		std::filesystem::path script_path;
-		GameInstance::Instance* attached_inst;
+		virtual void Load() = 0;
+		virtual void Render() = 0;
+		virtual void Update() = 0;
 	};
 
-	const std::vector<std::filesystem::path>& GetScripts();
+	template <typename T>
+	constexpr bool IsValidScript = std::is_base_of_v<Script, T> && std::is_default_constructible_v<T>;
+
+	//Is used to register the main class to Iota for main script execution
+	template <typename T>
+	requires IsValidScript<T>
+	void RegisterMainClass() {
+		static T* c;
+		if (c == nullptr) {
+			c = new T;
+		}
+		else return;
+	}
+
+	//Is used to register the main class to Iota for main script execution
+#define REGISTER_MAIN(CLASS) RegisterMainClass<CLASS>();
 }

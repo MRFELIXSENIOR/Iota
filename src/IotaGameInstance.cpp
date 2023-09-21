@@ -2,17 +2,26 @@
 #include "IotaApplication.hpp"
 #include "IotaEvent.hpp"
 #include "IotaBasic.hpp"
-#include "IotaBehavior.hpp"
 
 #include <map>
 
 using namespace iota;
-using namespace GameInstance;
 
-uint64_t GameBehavior::GetID() { return id; }
+ActorInterface::ActorInterface() {
+	ActorInterface* ac = static_cast<ActorInterface*>(this);
+	GetCont().push_back(ac);
+}
 
-Instance::Instance(): GameBehavior() {}
+ActorInterface::ActorContType& ActorInterface::GetCont() {
+	static ActorContType ct;
+	return ct;
+}
 
+void ActorInterface::Init() {
+	window = std::make_shared<Window>(Window::GetFocusedWindow().GetDataPointer());
+}
+	
+Instance::Instance() : parent(nullptr), ParentChanged(parent_changed), ChildAdded(child_added) {}
 Instance::~Instance() {}
 
 void Instance::Load() {}

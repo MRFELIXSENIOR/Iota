@@ -3,36 +3,45 @@
 #include <iostream>
 
 namespace iota {
-	namespace Vector {
-		template<typename T>
-		concept IsArithmetic = std::is_arithmetic_v<T>;
+	template<typename T>
+	concept IsArithmetic = std::is_arithmetic_v<T>;
 
-		template<IsArithmetic T>
-		struct Vec2 final {
-			T x;
-			T y;
+	template<IsArithmetic T>
+	struct Vector2 final {
+		T x;
+		T y;
 
-			constexpr Vec2() = default;
-			constexpr Vec2(T x, T y) : x(x), y(y) {}
+		constexpr Vector2() = default;
+		constexpr Vector2(T x, T y) : x(x), y(y) {}
 
-			//Vector
-			constexpr Vec2<T>& operator+=(const Vec2<T>& v) noexcept { x += v.x;  y += v.y; return *this; }
-			constexpr Vec2<T>& operator-=(const Vec2<T>& v) noexcept { x -= v.x;  y -= v.y; return *this; }
-			constexpr Vec2<T>& operator*=(const Vec2<T>& v) noexcept { x *= v.x;  y *= v.y; return *this; }
-			constexpr Vec2<T>& operator/=(const Vec2<T>& v) { x /= v.x;  y /= v.y; return *this; }
+		//Vector
+		constexpr Vector2<T>& operator+=(const Vector2<T>& v) noexcept { x += v.x;  y += v.y; return *this; }
+		constexpr Vector2<T>& operator-=(const Vector2<T>& v) noexcept { x -= v.x;  y -= v.y; return *this; }
+		constexpr Vector2<T>& operator*=(const Vector2<T>& v) noexcept { x *= v.x;  y *= v.y; return *this; }
+		constexpr Vector2<T>& operator/=(const Vector2<T>& v) { x /= v.x;  y /= v.y; return *this; }
 
-			//Scalar
-			constexpr Vec2<T>& operator+=(const T& s) noexcept { x += s;  y += s; return *this; }
-			constexpr Vec2<T>& operator-=(const T& s) noexcept { x -= s;  y -= s; return *this; }
-			constexpr Vec2<T>& operator*=(const T& s) noexcept { x *= s;  y *= s; return *this; }
-			constexpr Vec2<T>& operator/=(const T& s) { x /= s;  y /= s; return *this; }
+		//Scalar
+		constexpr Vector2<T>& operator+=(const T& s) noexcept { x += s;  y += s; return *this; }
+		constexpr Vector2<T>& operator-=(const T& s) noexcept { x -= s;  y -= s; return *this; }
+		constexpr Vector2<T>& operator*=(const T& s) noexcept { x *= s;  y *= s; return *this; }
+		constexpr Vector2<T>& operator/=(const T& s) { x /= s;  y /= s; return *this; }
 
-			std::ostream& operator<<(std::ostream& c) {
-				c << '[' << x << ", " << y << ']';
-				return c;
-			}
+		constexpr bool operator==(const Vector2<T>& other) { return x == other.x && y == other.y; }
+		constexpr bool operator!=(const Vector2<T>& other) { return !(*this == other); }
 
-			T Magnitude() { return std::sqrt(x * x + y * y); }
-		};
+		template <int = 0>
+		requires std::is_signed_v<T>
+		constexpr Vector2<T> operator-() const noexcept { return Vector2<T>(-x, -y); }
+
+		constexpr Vector2<T> operator+(const Vector2<T>& other) noexcept { return Vector2<T>(*this) += other; }
+		constexpr Vector2<T> operator-(const Vector2<T>& other) noexcept { return Vector2<T>(*this) -= other; }
+		constexpr Vector2<T> operator*(const Vector2<T>& other) noexcept { return Vector2<T>(*this) *= other; }
+		constexpr Vector2<T> operator/(const Vector2<T>& other) noexcept { return Vector2<T>(*this) /= other; }
+
+		void Print() {
+			std::cout << '[' << x << ", " << y << ']' << '\n';
+		}
+
+		T Magnitude() { return std::sqrt(x * x + y * y); }
 	};
 };

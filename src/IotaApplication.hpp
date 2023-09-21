@@ -18,5 +18,6 @@ namespace iota {
 		bool IsInitialized();
 
 		void SetFrameLimit(unsigned int target);
+		int GetFrameLimit();
 	};
 };

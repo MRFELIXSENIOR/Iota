@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IotaBehavior.hpp"
+#include "IotaGameInstance.hpp"
 #include "IotaDefs.hpp"
 
 #include <string>
@@ -16,19 +16,28 @@ namespace iota {
 		LARGE = 24
 	};
 
-	class Font : protected GameBehavior {
+	class Font : public ActorInterface {
 	private:
-		std::unordered_map<RenderSurface*, std::string> str_container;
-		Color color;
+		std::unordered_map<RenderSurface*, std::string> str8_container;
+		std::unordered_map<RenderSurface*, std::u16string> str16_container;
+
+		Color font_color;
 		TTF_Font* font;
 
 	public:
+		using ActorInterface::ActorInterface;
 		Font(const std::string& font_path, FontSize size);
 		Font(const std::string& font_path);
 		~Font();
 
-		void Resize(FontSize size);
+		template <FontSize Size>
+		void Resize() { TTF_SetFontSize(font, (int)Size); }
+
 		void RenderText(RenderSurface& surface, const std::string& str);
+		void RenderText(RenderSurface& surface, const std::u16string& str);
+
+		inline void ChangeForegroundColor(const Color& color) { font_color = color; }
+		inline void ChangeForegroundColor(Byte r, Byte g, Byte b) { ChangeForegroundColor({ r, g, b, 0xFF }); }
 
 		void Load() override;
 		void Render() override;
