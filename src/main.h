@@ -3,16 +3,25 @@
 #include "IotaEngine.h"
 using namespace iota;
 
-static RenderSurface surface(0, 0, 250, 250);
 
 class Main : public Script {
 public:
+	SoundEffect sfx;
+	RenderSurface surface;
+
+	Main() :
+		sfx("fart.wav"),
+		surface(0, 0, 250, 250)
+	{}
+
 	void Load() {
 		surface.color = Color(255, 0, 0);
 		std::cout << "hi\n";
 
-		Mouse::GetMouseDownEvent().Connect([](Position pos) -> void {
-			pos.Print();
+		Keyboard::GetKeydownEvent().Connect([this](KeyCode key) {
+			if (key == KeyCode::F) {
+				sfx.Play();
+			}
 		});
 	}
 

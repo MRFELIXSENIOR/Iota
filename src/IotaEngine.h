@@ -6,6 +6,7 @@
 #include "IotaVector.hpp"
 #include "IotaException.hpp"
 #include "IotaBasic.hpp"
+#include "IotaSound.hpp"
 #include "IotaInput.hpp"
 #include "IotaScript.hpp"
 #include "IotaEvent.hpp"

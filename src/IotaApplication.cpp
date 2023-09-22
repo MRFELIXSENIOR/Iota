@@ -2,6 +2,7 @@
 #include "IotaException.hpp"
 #include "IotaBasic.hpp"
 #include "IotaEvent.hpp"
+#include "IotaSound.hpp"
 #include "IotaTexture.hpp"
 
 #include <cstdlib>
@@ -27,20 +28,20 @@ static int app_framelimit = 60;
 bool Application::IsInitialized() { return app_initialized; }
 bool Application::IsRunning() { return app_running; }
 
-#define decl_str(v) std::string(v)
-
 bool Application::Initialize(const std::string& window_title, int window_width, int window_height) {
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-		throw RuntimeError("SDL Initialization Failure" + std::string(SDL_GetError()));
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0 ||
+		IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) < 0 ||
+		TTF_Init() < 0)
+		throw RuntimeError("SDL Initialization Failure, " + std::string(SDL_GetError()));
 
-	if (IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) < 0)
-		throw RuntimeError("SDL_Image Initialization Failure" + std::string(IMG_GetError()));
+	if (Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3 | MIX_INIT_FLAC | MIX_INIT_MOD) < 0 || 
+		Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) != 0 || 
+		Mix_AllocateChannels(16) == -1)
+		throw RuntimeError("SDL_mixer Initialization Failure, " + std::string(Mix_GetError()));
 
-	if (TTF_Init() < 0)
-		throw RuntimeError("SDL_ttf Initialization Failure" + std::string(TTF_GetError()));
-
-	if (Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3) < 0 || Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0)
-		throw RuntimeError("SDL_mixer Initialization Failure" + std::string(Mix_GetError()));
+	Mix_GroupChannels(0, 15, SFX);
+	Mix_GroupChannels(16, 21, AMBIENT);
+	Mix_GroupChannels(22, 23, UI_SFX);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
@@ -71,7 +72,7 @@ bool Application::Exit() {
 
 void Application::Start() {
 	if (!app_initialized)
-		throw RuntimeError("Application Is Not Initialized");
+		throw RuntimeError("Application is not initialized");
 
 	app_running = true;
 	Basic::AppLoop();

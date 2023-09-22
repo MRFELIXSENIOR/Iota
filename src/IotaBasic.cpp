@@ -139,7 +139,7 @@ Window::~Window() {
 
 Window& Window::GetCurrentWindow() {
 	if (current_window == nullptr)
-		throw RuntimeError("Could not GetCurrentWindow");
+		throw RuntimeError("Could not Get Current Window");
 	return *current_window;
 }
 
