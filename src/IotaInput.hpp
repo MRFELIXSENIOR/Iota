@@ -6,7 +6,7 @@
 #include <string>
 
 #include "IotaEvent.hpp"
-#include "IotaDefs.hpp"
+#include "IotaVector.hpp"
 
 namespace iota {
 	//Key Codes
@@ -277,8 +277,8 @@ namespace iota {
 	};
 
 	namespace Mouse {
-		ScriptSignal<Position> GetMouseMotionEvent();
-		ScriptSignal<Position> GetMouseDownEvent();
-		ScriptSignal<Position> GetMouseUpEvent();
+		ScriptSignal<Vector2<int>> GetMouseMotionEvent();
+		ScriptSignal<Vector2<int>> GetMouseDownEvent();
+		ScriptSignal<Vector2<int>> GetMouseUpEvent();
 	};
 };

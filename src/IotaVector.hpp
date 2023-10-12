@@ -4,9 +4,6 @@
 
 namespace iota {
 	template<typename T>
-	concept IsArithmetic = std::is_arithmetic_v<T>;
-
-	template<IsArithmetic T>
 	struct Vector2 final {
 		T x;
 		T y;

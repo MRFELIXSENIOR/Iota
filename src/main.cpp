@@ -3,10 +3,9 @@
 #include <exception>
 
 int main() {
-
 	try {
-		if (Application::Initialize("Test", 1024, 768)) {
-			RegisterMainClass<Main>();
+		if (Application::Initialize("Test", 640, 480)) {
+			REGISTER_MAIN(Main);
 			Application::Start();
 		}
 	}

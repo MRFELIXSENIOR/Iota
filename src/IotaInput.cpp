@@ -1,6 +1,7 @@
 #include "IotaInput.hpp"
 #include "IotaEvent.hpp"
 #include "IotaApplication.hpp"
+#include "IotaVector.hpp"
 
 #include <vector>
 #include <string>
@@ -545,7 +546,7 @@ bool Keyboard::IsKeyReleased(KeyCode key) {
 	return false;
 }
 
-static Event<Position> mouse_motion_event, mouse_down_event, mouse_up_event;
-ScriptSignal<Position> Mouse::GetMouseMotionEvent() { return ScriptSignal<Position>(mouse_motion_event); }
-ScriptSignal<Position> Mouse::GetMouseDownEvent() { return ScriptSignal<Position>(mouse_down_event); }
-ScriptSignal<Position> Mouse::GetMouseUpEvent() { return ScriptSignal<Position>(mouse_up_event); }
+static Event<Vector2<int>> mouse_motion_event, mouse_down_event, mouse_up_event;
+ScriptSignal<Vector2<int>> Mouse::GetMouseMotionEvent() { return ScriptSignal<Vector2<int>>(mouse_motion_event); }
+ScriptSignal<Vector2<int>> Mouse::GetMouseDownEvent() { return ScriptSignal<Vector2<int>>(mouse_down_event); }
+ScriptSignal<Vector2<int>> Mouse::GetMouseUpEvent() { return ScriptSignal<Vector2<int>>(mouse_up_event); }

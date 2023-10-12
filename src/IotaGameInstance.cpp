@@ -26,4 +26,4 @@ Instance::~Instance() {}
 
 void Instance::Load() {}
 void Instance::Render() {}
-void Instance::Update() {}
+void Instance::Update(float dt) {}

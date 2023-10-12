@@ -18,13 +18,17 @@ add_library(
 	SHARED
 	"${SRC_DIR}/IotaApplication.cpp"
 	"${SRC_DIR}/IotaGameInstance.cpp"
-	"${SRC_DIR}/IotaDefs.cpp"
 	"${SRC_DIR}/IotaBasic.cpp"
 	"${SRC_DIR}/IotaInput.cpp"
 	"${SRC_DIR}/IotaSound.cpp"
 	"${SRC_DIR}/IotaTexture.cpp"
-	"${SRC_DIR}/IotaScript.cpp"
 	"${SRC_DIR}/IotaFont.cpp"
+	"${SRC_DIR}/IotaCamera.cpp"
+	"${SRC_DIR}/IotaScript.cpp"
+	"${SRC_DIR}/IotaSprite.cpp"
+	"${SRC_DIR}/IotaUIObject.cpp"
+	"${SRC_DIR}/IotaTile.cpp"
+	
 )
 
 

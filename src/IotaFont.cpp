@@ -1,16 +1,15 @@
-#include "IotaFont.hpp"
-#include "IotaBasic.hpp"
+#include <string>
 
-#include <SDL_ttf.h>
+#include "IotaTexture.hpp"
+#include "IotaFont.hpp"
 
 using namespace iota;
 
-Font::Font(const std::string& font_path) {
-	font = TTF_OpenFont(font_path.c_str(), 18);
-}
+Font::Font(const std::string& font_path): Font(font_path, FontSize::MEDIUM) {}
 
-Font::Font(const std::string& font_path, FontSize size) {
-	font = TTF_OpenFont(font_path.c_str(), (int)size);
+Font::Font(const std::string& font_path, FontSize size): font_color(0, 0, 0), font(TTF_OpenFont(font_path.c_str(), (int)size)) {
+	if (!font)
+		throw RuntimeError("Could not load font, " + std::string(TTF_GetError()));
 }
 
 Font::~Font() {
@@ -28,14 +27,30 @@ void Font::RenderText(RenderSurface& surface, const std::u16string& str) {
 }
 
 void Font::Load() {}
-void Font::Update() {}
+void Font::Update(float dt) {}
 
 void Font::Render() {
-	for (auto& s : str8_container) {
-		TTF_RenderUTF8_LCD(font, s.second.c_str(), font_color.GetData(), s.first->color.GetData());
+	if (!str8_container.empty()) {
+		for (auto& s : str8_container) {
+			SDL_Surface* suf = TTF_RenderUTF8_LCD(font, s.second.c_str(), font_color.GetData(), s.first->data.color.GetData());
+			if (!suf)
+				throw RuntimeError("Could not render text surface, " + std::string(TTF_GetError()));
+
+			Texture tex(suf);
+			SDL_FreeSurface(suf);
+			Window::GetCurrentWindow().DrawTexture(tex, *s.first);
+		}
 	}
 
-	for (auto& s : str16_container) {
-		TTF_RenderUNICODE_LCD(font, (const uint16_t*)s.second.c_str(), font_color.GetData(), s.first->color.GetData());
+	if (!str16_container.empty()) {
+		for (auto& s : str16_container) {
+			SDL_Surface* suf = TTF_RenderUNICODE_LCD(font, (const uint16_t*)s.second.c_str(), font_color.GetData(), s.first->data.color.GetData());
+			if (!suf)
+				throw RuntimeError("Could not render text surface, " + std::string(TTF_GetError()));
+
+			Texture tex(suf);
+			SDL_FreeSurface(suf);
+			Window::GetCurrentWindow().DrawTexture(tex, *s.first);
+		}
 	}
 }

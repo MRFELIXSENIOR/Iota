@@ -4,7 +4,6 @@
 #include "IotaApplication.hpp"
 #include "IotaInput.hpp"
 #include "IotaGameInstance.hpp"
-#include "IotaDefs.hpp"
 
 #include <vector>
 #include <SDL.h>
@@ -15,28 +14,25 @@ using namespace Basic;
 
 static Window* current_window = nullptr;
 
-void Basic::Load() {
-	auto& ct = ActorInterface::GetCont();
-
-	for (auto& a : ct) {
-		a->Load();
-	}
+Color::Color() : red(0xFF), green(0xFF), blue(0xFF), alpha(0xFF) {}
+Color::Color(Byte r, Byte g, Byte b, Byte a) : red(r), green(g), blue(b), alpha(a) {}
+SDL_Color Color::GetData() const {
+	SDL_Color c = { red, green, blue, alpha };
+	return c;
 }
 
+void Basic::Load() {
+	for (auto& a : ActorInterface::GetCont()) { a->Load(); }
+}
 void Basic::Render() {
-	auto& ct = ActorInterface::GetCont();
 	SDL_RenderClear(Window::GetCurrentWindow().GetRendererPointer());
-	for (auto& a : ct) {
-		a->Render();
-	}
+	for (auto& a : ActorInterface::GetCont()) { a->Render(); }
 	SDL_SetRenderDrawColor(Window::GetCurrentWindow().GetRendererPointer(), 255, 255, 255, 255);
 	SDL_RenderPresent(Window::GetCurrentWindow().GetRendererPointer());
 }
-
-void Basic::Update() {
-	auto& ct = ActorInterface::GetCont();
-	for (auto& a : ct) {
-		a->Update();
+void Basic::Update(float delta_time) {
+	for (auto& a : ActorInterface::GetCont()) {
+		a->Update(delta_time);
 	}
 }
 
@@ -58,21 +54,21 @@ void Basic::PollEvent() {
 
 		case SDL_MOUSEMOTION:
 		{
-			Position p(global_ev.motion.x, global_ev.motion.y);
+			Vector2<int> p(global_ev.motion.x, global_ev.motion.y);
 			Mouse::GetMouseMotionEvent().e->Fire(p);
 		}
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
 		{
-			Position p(global_ev.motion.x, global_ev.motion.y);
+			Vector2<int> p(global_ev.motion.x, global_ev.motion.y);
 			Mouse::GetMouseDownEvent().e->Fire(p);
 		}
 			break;
 
 		case SDL_MOUSEBUTTONUP:
 		{
-			Position p(global_ev.motion.x, global_ev.motion.y);
+			Vector2<int> p(global_ev.motion.x, global_ev.motion.y);
 			Mouse::GetMouseUpEvent().e->Fire(p);
 		}
 			break;
@@ -88,22 +84,24 @@ void Basic::PollEvent() {
 }
 
 void Basic::AppLoop() {
-	uint32_t frame_start;
-	float frame_time;
+	uint32_t frame_start, previous_frame = SDL_GetTicks();
+	float frame_time, dt;
 	int frame_delay = 1000 / Application::GetFrameLimit();
 
 	Load();
 	while (Application::IsRunning()) {
 		frame_start = SDL_GetTicks();
+		dt = (frame_start - previous_frame) / 1000.f;
+		previous_frame = frame_start;
 
 		PollEvent();
 		if (!Application::IsRunning()) break;
+		Update(dt);
 		Render();
 
 		frame_time = (SDL_GetTicks() - frame_start) / 1000.f;
 		if (frame_time < frame_delay)
 			SDL_Delay(frame_delay - frame_time);
-		Update();
 	}
 }
 
@@ -118,7 +116,8 @@ Window::Window(std::string window_title, unsigned int window_width,
 
 	self_renderer = SDL_CreateRenderer(self, -1, SDL_RENDERER_ACCELERATED);
 	if (!self_renderer)
-		throw RuntimeError("Could not Get Renderer, " + std::string(SDL_GetError()));
+		throw RuntimeError("Could not create Renderer, " + std::string(SDL_GetError()));
+
 	current_window = this;
 }
 
@@ -129,6 +128,7 @@ Window::Window(SDL_Window* win) : self(win) {
 	self_renderer = SDL_GetRenderer(self);
 	if (!self_renderer)
 		throw RuntimeError("Could not Get Renderer, " + std::string(SDL_GetError()));
+
 	current_window = this;
 }
 
@@ -160,77 +160,63 @@ Window& Window::GetFocusedWindow() {
 SDL_Renderer* Window::GetRendererPointer() const { return self_renderer; }
 SDL_Window* Window::GetDataPointer() const { return self; }
 
+int Window::GetWidth() const {
+	int w;
+	SDL_GetWindowSize(self, &w, nullptr);
+	return w;
+}
+
+int Window::GetHeight() const {
+	int h;
+	SDL_GetWindowSize(self, nullptr, &h);
+	return h;
+}
+
 void Window::SetDrawColor(const Color& color) const { SDL_SetRenderDrawColor(self_renderer, color.red, color.green, color.blue, color.alpha); }
 
 // Textures
-void Window::RenderTextureToScreen(Texture& texture) const {
+void Window::DrawTextureToScreen(Texture& texture) const {
 	SDL_RenderCopy(self_renderer, texture.GetDataPointer(), NULL, NULL);
 }
 
-void Window::RenderTexture(Texture& texture, const RenderSurface& surface) const {
-	SDL_RenderCopy(self_renderer, texture.GetDataPointer(), NULL, surface.GetRectData());
-}
-
-void Window::RenderTexture(Texture& texture, const Position& pos) const {
-
+void Window::DrawTexture(Texture& texture, const RenderSurface& surface) const {
+	SDL_RenderCopy(self_renderer, texture.GetDataPointer(), NULL, surface.GetRectPointer());
 }
 
 // Models
-void Window::DrawRectangle(DrawMode mode, const RenderSurface& surface) const {
-	SetDrawColor(surface.color);
-	switch (mode) {
-	case DrawMode::FILL:
-		SDL_RenderFillRect(self_renderer, surface.GetRectData());
+void Window::DrawRectangle(const RenderSurface& surface) const {
+	SetDrawColor(surface.data.color);
+	switch (surface.data.fill) {
+	case true:
+		SDL_RenderFillRect(self_renderer, surface.GetRectPointer());
 		break;
 
-	case DrawMode::OUTLINE:
-		SDL_RenderDrawRect(self_renderer, surface.GetRectData());
+	case false:
+		SDL_RenderDrawRect(self_renderer, surface.GetRectPointer());
 	}
 }
 
-void Window::DrawTriangle(DrawMode mode, const RenderSurface& surface) const {}
+void Window::DrawTriangle(const RenderSurface& surface) const {}
 
-void Window::DrawCircle(DrawMode mode, const RenderSurface& surface) const {
-	switch (mode) {
-	case DrawMode::FILL:
-		filledCircleRGBA(self_renderer, surface.GetX(), surface.GetY(), surface.GetHeight() / 2, surface.color.red, surface.color.blue, surface.color.green, surface.color.alpha);
+void Window::DrawCircle(const RenderSurface& surface) const {
+	switch (surface.data.fill) {
+	case true:
+		filledCircleRGBA(self_renderer, surface.x, surface.y, surface.height / 2, surface.data.color.red, surface.data.color.blue, surface.data.color.green, surface.data.color.alpha);
 		break;
 
-	case DrawMode::OUTLINE:
-		circleRGBA(self_renderer, surface.GetX(), surface.GetY(), surface.GetHeight() / 2, surface.color.red, surface.color.blue, surface.color.green, surface.color.alpha);
+	case false:
+		circleRGBA(self_renderer, surface.x, surface.y, surface.height / 2, surface.data.color.red, surface.data.color.blue, surface.data.color.green, surface.data.color.alpha);
 		break;
 	}
 }
 
-RenderSurface::RenderSurface(int x, int y, unsigned int width, unsigned int height) :
-	rect(new SDL_Rect) {
-	rect->x = x;
-	rect->y = y;
-	rect->w = width;
-	rect->h = height;
-}
+RenderSurface::RenderSurface(int x, int y, int width, int height) : 
+	rect({ x, y, width, height }), 
+	x(rect.x),
+	y(rect.y),
+	width(rect.w),
+	height(rect.h)
+{}
 
-RenderSurface::~RenderSurface() {
-	delete rect;
-}
-
-void RenderSurface::SetPosition(int x, int y) {
-	rect->x = x;
-	rect->y = y;
-}
-
-void RenderSurface::Resize(unsigned int width, unsigned int height) {
-	rect->w = width;
-	rect->h = height;
-}
-
-void RenderSurface::SetX(int x) { rect->x = x; }
-int RenderSurface::GetX() const { return rect->x; }
-void RenderSurface::SetY(int y) { rect->y = y; }
-int RenderSurface::GetY() const { return rect->y; }
-void RenderSurface::SetWidth(int width) { rect->w = width; }
-int RenderSurface::GetWidth() const { return rect->w; }
-void RenderSurface::SetHeight(int height) { rect->h = height; }
-int RenderSurface::GetHeight() const { return rect->h; }
-
-SDL_Rect* RenderSurface::GetRectData() const { return rect; }
+SDL_Rect& RenderSurface::GetRectData() { return rect; }
+const SDL_Rect* RenderSurface::GetRectPointer() const { return &rect; }

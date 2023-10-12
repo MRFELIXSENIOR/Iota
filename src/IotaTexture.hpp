@@ -7,15 +7,18 @@ namespace iota {
 	class Window;
 
 	class Texture {
-	private:
+	protected:
 		SDL_Texture* texture;
 
 	public:
-		Texture();
-		~Texture();
-		SDL_Texture* GetDataPointer() const;
+		Texture(const std::string& path);
+		Texture(const std::string& path, Window& window);
 
-		static Texture& LoadTexture(const std::string& path);
-		static Texture& LoadTexture(const std::string& path, const Window& window);
+		Texture(SDL_Surface* sdl_surface);
+		Texture(SDL_Surface* sdl_surface, Window& window);
+
+		~Texture();
+
+		SDL_Texture* GetDataPointer() const;
 	};
 } // namespace iota

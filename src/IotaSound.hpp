@@ -10,12 +10,11 @@ namespace iota {
 
 	enum SoundGroupTag {
 		SFX = 1,
-		MUSIC = 2,
-		AMBIENT = 4,
+		AMBIENT = 2,
 		UI_SFX = 3,
 	};
 
-	class Music {
+	class Music final {
 	public:
 		Music(const std::string& mp3_path);
 		~Music();
@@ -51,7 +50,7 @@ namespace iota {
 		Mix_Music* music;
 	};
 
-	class SoundEffect {
+	class SoundEffect final {
 	public:
 		SoundEffect(const std::string& wav_path);
 		~SoundEffect();

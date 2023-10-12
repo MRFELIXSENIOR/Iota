@@ -7,29 +7,37 @@ using namespace iota;
 class Main : public Script {
 public:
 	SoundEffect sfx;
-	RenderSurface surface;
+	Tile player;
 
 	Main() :
 		sfx("fart.wav"),
-		surface(0, 0, 250, 250)
+		player("./cat.png")
 	{}
 
 	void Load() {
-		surface.color = Color(255, 0, 0);
 		std::cout << "hi\n";
 
 		Keyboard::GetKeydownEvent().Connect([this](KeyCode key) {
-			if (key == KeyCode::F) {
-				sfx.Play();
+			switch (key) {
+			case KeyCode::W:
+				std::cout << player.Position.x << '\n';
+				std::cout << "w clicked\n";
+				break;
+			case KeyCode::S:
+				break;
+			case KeyCode::A:
+				break;
+			case KeyCode::D:
+				break;
+			default:
+				break;
 			}
 		});
 	}
 
 	void Render() {
-		Window::GetCurrentWindow().DrawRectangle(Basic::DrawMode::FILL, surface);
 	}
 
-	void Update() {
-
+	void Update(float dt) {
 	}
 };

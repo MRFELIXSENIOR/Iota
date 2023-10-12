@@ -1,11 +1,13 @@
 #pragma once
 
 #include "IotaGameInstance.hpp"
-#include "IotaDefs.hpp"
+#include "IotaBasic.hpp"
 
 #include <string>
 #include <unordered_map>
+
 #include <SDL_ttf.h>
+
 
 namespace iota {
 	class RenderSurface;
@@ -16,7 +18,7 @@ namespace iota {
 		LARGE = 24
 	};
 
-	class Font : public ActorInterface {
+	class Font : ActorInterface {
 	private:
 		std::unordered_map<RenderSurface*, std::string> str8_container;
 		std::unordered_map<RenderSurface*, std::u16string> str16_container;
@@ -39,8 +41,9 @@ namespace iota {
 		inline void ChangeForegroundColor(const Color& color) { font_color = color; }
 		inline void ChangeForegroundColor(Byte r, Byte g, Byte b) { ChangeForegroundColor({ r, g, b, 0xFF }); }
 
-		void Load() override;
-		void Render() override;
-		void Update() override;
+	protected:
+		void Load();
+		void Render();
+		void Update(float dt);
 	};
-};
+}

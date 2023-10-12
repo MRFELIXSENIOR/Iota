@@ -5,14 +5,15 @@
 #include <memory>
 
 namespace iota {
-	class Script : public Instance {
+	class Script : Instance {
 	public:
 		using Instance::Instance;
 		Script();
 
+	protected:
 		virtual void Load() = 0;
 		virtual void Render() = 0;
-		virtual void Update() = 0;
+		virtual void Update(float dt) = 0;
 	};
 
 	template <typename T>
