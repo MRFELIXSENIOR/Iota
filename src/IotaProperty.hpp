@@ -2,6 +2,8 @@
 
 #include "IotaEvent.hpp"
 
+#include <concepts>
+
 namespace iota {
 	template <typename T>
 	struct ValuePointedProperty;
@@ -72,6 +74,23 @@ namespace iota {
 			return *this;
 		}
 
+		template <int = 0>
+		requires std::totally_ordered<T>
+		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>& operator<(const T& other) { return ref < other; return *this; }
+
+		template <int = 0>
+		requires std::totally_ordered<T>
+		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>& operator>(const T& other) { return ref > other; return *this;  }
+
+		template <int = 0>
+		requires std::totally_ordered<T>
+		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>& operator<=(const T& other) { return ref <= other; return *this; }
+
+		template <int = 0>
+		requires std::totally_ordered<T>
+		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>& operator>=(const T& other) { return ref >= other; return *this; }
+
+
 		bool operator==(const T& other) { return (ref == other); }
 		bool operator!=(const T& other) { return !(*this == other); }
 
@@ -86,7 +105,7 @@ namespace iota {
 	};
 
 	template <typename T>
-	struct PropertyValueRef<T, ValuePointedProperty<Vector2<T>>> {
+	struct PropertyValueRef<T, ValuePointedProperty<Vector2<T>>> : PropertyValueRef<T, ValuePointedProperty<T>> {
 	private:
 		T& ref;
 		ValuePointedProperty<Vector2<T>>& prop_ref;
@@ -147,6 +166,22 @@ namespace iota {
 			ref /= other;
 			return *this;
 		}
+
+		template <int = 0>
+		requires std::totally_ordered<T>
+		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>& operator<(const T& other) { return ref < other; return *this; }
+
+		template <int = 0>
+		requires std::totally_ordered<T>
+		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>& operator>(const T& other) { return ref > other; return *this;  }
+
+		template <int = 0>
+		requires std::totally_ordered<T>
+		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>& operator<=(const T& other) { return ref <= other; return *this; }
+
+		template <int = 0>
+		requires std::totally_ordered<T>
+		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>& operator>=(const T& other) { return ref >= other; return *this; }
 
 		bool operator==(const T& other) { return (*ref == other); }
 		bool operator!=(const T& other) { return !(*this == other); }
