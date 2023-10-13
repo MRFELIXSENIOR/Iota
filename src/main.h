@@ -17,13 +17,19 @@ public:
 	void Load() {
 		std::cout << "hi\n";
 
+		player.Position.GetValueChangedEvent().Connect([](Vector2<int> vec) {
+			std::cout << "position changed!\n";
+			});
+
 		Keyboard::GetKeydownEvent().Connect([this](KeyCode key) {
 			switch (key) {
 			case KeyCode::W:
+				player.Position.x += 10;
 				std::cout << player.Position.x << '\n';
 				std::cout << "w clicked\n";
 				break;
 			case KeyCode::S:
+				std::cout << player.Position.x << '\n';
 				break;
 			case KeyCode::A:
 				break;

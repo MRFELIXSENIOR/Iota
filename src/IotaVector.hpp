@@ -35,8 +35,9 @@ namespace iota {
 		constexpr Vector2<T> operator*(const Vector2<T>& other) noexcept { return Vector2<T>(*this) *= other; }
 		constexpr Vector2<T> operator/(const Vector2<T>& other) noexcept { return Vector2<T>(*this) /= other; }
 
-		void Print() {
-			std::cout << '[' << x << ", " << y << ']' << '\n';
+		std::ostream& operator<<(std::ostream& os) {
+			os << '[' << x << ", " << y << "]\n";
+			return os;
 		}
 
 		T Magnitude() { return std::sqrt(x * x + y * y); }

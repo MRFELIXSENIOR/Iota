@@ -3,8 +3,8 @@
 using namespace iota;
 
 Sprite::Sprite(const std::string& path, int argx, int argy, int argwidth, int argheight):
-	RenderSurface(argx, argy, argwidth, argheight),
 	Texture(path),
+	RenderSurface(argx, argy, argwidth, argheight),
 	Position(x, y),
 	Size(width, height)
 {}
@@ -25,7 +25,7 @@ Sprite::Sprite(const std::string& sprite_sheet, int framec, int framew, int fram
 
 void Sprite::Load() {}
 void Sprite::Render() {
-	SDL_RenderCopy(Window::GetCurrentWindow().GetRendererPointer(), texture, frames[current_frame].GetRectPointer(), GetRectPointer());
+	Window::GetCurrentWindow().DrawTexture(*this, frames[current_frame], *this);
 }
 
 void Sprite::Update(float dt) {

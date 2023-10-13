@@ -2,9 +2,9 @@
 
 using namespace iota;
 
-Tile::Tile(const std::string& texture_path, int x, int y, int width, int height) :
+Tile::Tile(const std::string& texture_path, int argx, int argy, int argwidth, int argheight) :
 	Texture(texture_path),
-	RenderSurface(x, y, width, height),
+	RenderSurface(argx, argy, argwidth, argheight),
 	Position(x, y),
 	Size(width, height)
 {}
@@ -17,7 +17,6 @@ void Tile::Load() {
 
 void Tile::Render() {
 	Window::GetCurrentWindow().DrawTexture(*this, *this);
-	Window::GetCurrentWindow().DrawRectangle(*this);
 }
 
 void Tile::Update(float dt) {

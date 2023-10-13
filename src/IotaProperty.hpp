@@ -177,7 +177,7 @@ namespace iota {
 		PropertyValueRef<T, Property<T>> Value;
 
 		Property<T>& operator=(const T& rhs) { Value.operator=(rhs); }
-		ScriptSignal<T> GetValueChangedEvent() const { return ScriptSignal<T>(signal); }
+		ScriptSignal<T> GetValueChangedEvent() { return ScriptSignal<T>(signal); }
 
 		bool operator==(const T& rhs) { return (Value == rhs); }
 		bool operator!=(const T& rhs) { return !(*this == rhs); }
@@ -197,7 +197,7 @@ namespace iota {
 		PropertyValueRef<T, ValuePointedProperty<T>> Value;
 
 		ValuePointedProperty<T>& operator=(const T& rhs) { Value.operator=(rhs); }
-		ScriptSignal<T> GetValueChangedEvent() const { return ScriptSignal<T>(signal); }
+		ScriptSignal<T> GetValueChangedEvent() { return ScriptSignal<T>(signal); }
 
 		bool operator==(const T& rhs) { return (Value == rhs); }
 		bool operator!=(const T& rhs) { return !(*this == rhs); }
@@ -222,7 +222,7 @@ namespace iota {
 			x.operator=(rhs.x);
 			y.operator=(rhs.y);
 		}
-		ScriptSignal<Vector2<T>> GetValueChangedEvent() const { return ScriptSignal<Vector2<T>>(signal); }
+		ScriptSignal<Vector2<T>> GetValueChangedEvent() { return ScriptSignal<Vector2<T>>(signal); }
 
 		bool operator==(const Vector2<T>& other) { return (x == other.x) && (y == other.y); }
 		bool operator!=(const Vector2<T>& other) { return !(*this == other); }

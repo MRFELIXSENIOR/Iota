@@ -54,11 +54,19 @@ namespace iota {
 
 		void SetDrawColor(const Color& color) const;
 
-		void DrawTextureToScreen(Texture& texture) const;
+		//Draw the texture to the screen
+		void DrawTexture(Texture& texture) const;
+
+		//Draw the texture to 'surface'
 		void DrawTexture(Texture& texture, const RenderSurface& surface) const;
 
+		/*
+		Crop the texture with position and size from 'source'
+		And draw it to 'destination'
+		*/
+		void DrawTexture(Texture& texture, const RenderSurface& source, const RenderSurface& destination) const;
+
 		void DrawRectangle(const RenderSurface& surface) const;
-		void DrawTriangle(const RenderSurface& surface) const;
 		void DrawCircle(const RenderSurface& surface) const;
 
 		static Window& GetCurrentWindow();

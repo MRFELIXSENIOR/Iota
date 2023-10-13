@@ -175,12 +175,16 @@ int Window::GetHeight() const {
 void Window::SetDrawColor(const Color& color) const { SDL_SetRenderDrawColor(self_renderer, color.red, color.green, color.blue, color.alpha); }
 
 // Textures
-void Window::DrawTextureToScreen(Texture& texture) const {
+void Window::DrawTexture(Texture& texture) const {
 	SDL_RenderCopy(self_renderer, texture.GetDataPointer(), NULL, NULL);
 }
 
 void Window::DrawTexture(Texture& texture, const RenderSurface& surface) const {
 	SDL_RenderCopy(self_renderer, texture.GetDataPointer(), NULL, surface.GetRectPointer());
+}
+
+void Window::DrawTexture(Texture& texture, const RenderSurface& src, const RenderSurface& dest) const {
+	SDL_RenderCopy(self_renderer, texture.GetDataPointer(), src.GetRectPointer(), dest.GetRectPointer());
 }
 
 // Models
@@ -195,8 +199,6 @@ void Window::DrawRectangle(const RenderSurface& surface) const {
 		SDL_RenderDrawRect(self_renderer, surface.GetRectPointer());
 	}
 }
-
-void Window::DrawTriangle(const RenderSurface& surface) const {}
 
 void Window::DrawCircle(const RenderSurface& surface) const {
 	switch (surface.data.fill) {
