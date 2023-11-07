@@ -1,17 +1,22 @@
 cmake_minimum_required(VERSION 3.26)
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(Iota)
+#set(CMAKE_C_COMPILER clang)
+#set(CMAKE_CXX_COMPILER clang++)
+
+project(IotaEngine)
 
 # Main
 
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
-set(DEBUG_DIR ${CMAKE_SOURCE_DIR}/debug/x64-Debug)
+set(DEBUG_DIR ${CMAKE_SOURCE_DIR}/debug/x64)
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)
+set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 
 add_library(
 	IotaEngine
@@ -28,7 +33,6 @@ add_library(
 	"${SRC_DIR}/IotaSprite.cpp"
 	"${SRC_DIR}/IotaUIObject.cpp"
 	"${SRC_DIR}/IotaTile.cpp"
-	
 )
 
 
@@ -44,7 +48,7 @@ include_directories(
 
 target_link_directories(
 	IotaEngine
-	PRIVATE
+    PUBLIC
 	${LIB_DIR}/SDL2
 	${LIB_DIR}/SDL2_image
 	${LIB_DIR}/SDL2_mixer
@@ -54,7 +58,7 @@ target_link_directories(
 
 target_link_libraries(
 	IotaEngine
-	PRIVATE
+    PUBLIC
 	SDL2
 	SDL2main
 	SDL2_image
@@ -63,16 +67,18 @@ target_link_libraries(
 	SDL2_gfx
 	)
 
-add_executable(Iota ${SRC_DIR}/main.cpp)
+add_executable(Iota ${TEST_DIR}/main.cpp)
 
-if (WIN32)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-endif()
+target_link_directories(
+    Iota
+    PRIVATE
+    ${DEBUG_DIR}
+    )
 
 target_link_libraries(
-	Iota
-	PRIVATE
-	IotaEngine
-)
+    Iota
+    PRIVATE
+    IotaEngine
+    )
 
 add_dependencies(Iota IotaEngine)

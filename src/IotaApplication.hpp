@@ -4,15 +4,17 @@
 #include <exception>
 #include <string>
 
+#include "IotaDef.hpp"
+
 namespace iota {
 	class Window;
 	class Renderer;
 
 	namespace Application {
-		bool Initialize(const std::string& window_title, int window_width, int window_height);
-		void Start();
+		void IOTA_API Initialize(const std::string& window_title, int window_width, int window_height);
+		void IOTA_API Start();
 
-		bool Exit();
+		void IOTA_API Exit();
 
 		bool IsRunning();
 		bool IsInitialized();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IotaEvent.hpp"
+#include "IotaVector.hpp"
 
 #include <concepts>
 
@@ -105,7 +106,7 @@ namespace iota {
 	};
 
 	template <typename T>
-	struct PropertyValueRef<T, ValuePointedProperty<Vector2<T>>> : PropertyValueRef<T, ValuePointedProperty<T>> {
+	struct PropertyValueRef<T, ValuePointedProperty<Vector2<T>>> {
 	private:
 		T& ref;
 		ValuePointedProperty<Vector2<T>>& prop_ref;
@@ -227,7 +228,7 @@ namespace iota {
 		friend struct PropertyValueRef<T, ValuePointedProperty<T>>;
 
 	public:
-		ValuePointedProperty(T& value_ref) : value(&value_ref), Value(*value, *this) {}
+		ValuePointedProperty(T& value_ref) : value(&value_ref), Value(value_ref, *this) {}
 
 		PropertyValueRef<T, ValuePointedProperty<T>> Value;
 
@@ -248,7 +249,7 @@ namespace iota {
 		friend struct PropertyValueRef<T, ValuePointedProperty<Vector2<T>>>;
 
 	public:
-		ValuePointedProperty(T& argx, T& argy) : xptr(&argx), yptr(&argy), x(*xptr, *this), y(*yptr, *this) {}
+		ValuePointedProperty(T& argx, T& argy) : xptr(&argx), yptr(&argy), x(argx, *this), y(argy, *this) {}
 
 		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>> x;
 		PropertyValueRef<T, ValuePointedProperty<Vector2<T>>> y;

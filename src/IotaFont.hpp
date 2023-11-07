@@ -2,12 +2,13 @@
 
 #include "IotaGameInstance.hpp"
 #include "IotaBasic.hpp"
+#include "IotaDef.hpp"
 
 #include <string>
 #include <unordered_map>
+#include <variant>
 
 #include <SDL_ttf.h>
-
 
 namespace iota {
 	class RenderSurface;
@@ -18,12 +19,23 @@ namespace iota {
 		LARGE = 24
 	};
 
-	class Font : ActorInterface {
+	class IOTA_API Font : ActorInterface {
 	private:
-		std::unordered_map<RenderSurface*, std::string> str8_container;
-		std::unordered_map<RenderSurface*, std::u16string> str16_container;
+		struct UTF8Text {
+			std::string text;
+			Color bg, fg;
+			RenderSurface* surface;
+		};
 
-		Color font_color;
+		struct UTF16Text { 
+			std::u16string text;
+			Color bg, fg;
+			RenderSurface* surface;
+		};
+
+		std::vector<UTF8Text> str8_container;
+		std::vector<UTF16Text> str16_container;
+
 		TTF_Font* font;
 
 	public:
@@ -35,11 +47,10 @@ namespace iota {
 		template <FontSize Size>
 		void Resize() { TTF_SetFontSize(font, (int)Size); }
 
-		void RenderText(RenderSurface& surface, const std::string& str);
-		void RenderText(RenderSurface& surface, const std::u16string& str);
-
-		inline void ChangeForegroundColor(const Color& color) { font_color = color; }
-		inline void ChangeForegroundColor(Byte r, Byte g, Byte b) { ChangeForegroundColor({ r, g, b, 0xFF }); }
+		void RenderText(RenderSurface& surface, const std::string& str, const Color& background, const Color& foreground);
+		void RenderText(RenderSurface& surface, const std::string& str, const Color& foreground);
+		void RenderText(RenderSurface& surface, const std::u16string& str, const Color& background, const Color& foreground);
+		void RenderText(RenderSurface& surface, const std::u16string& str, const Color& foreground);
 
 	protected:
 		void Load();

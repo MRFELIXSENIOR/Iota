@@ -3,11 +3,12 @@
 #include "IotaTexture.hpp"
 #include "IotaGameInstance.hpp"
 #include "IotaBasic.hpp"
+#include "IotaDef.hpp"
 
 #include <vector>
 
 namespace iota {
-	class Sprite : Instance, RenderSurface, Texture {
+	class IOTA_API Sprite : Instance, RenderSurface, Texture {
 	public:
 		//Creates a static sprite
 		Sprite(const std::string& path, int x, int y, int width, int height);
@@ -23,6 +24,14 @@ namespace iota {
 		*/
 		Sprite(const std::string& sprite_sheet, int x, int y, int width, int height, int frame_count, int frame_width = 64, int frame_height = 64);
 		Sprite(const std::string& sprite_sheet, int frame_count, int frame_width = 64, int frame_height = 64);
+
+		//Creates a static blank sprite with white color
+		Sprite();
+		Sprite(int x, int y, int width, int height);
+
+		//Creates a static sprite with color
+		Sprite(const Color& color);
+		Sprite(const Color& color, int x, int y, int width, int height);
 
 		inline bool IsAnimated() { return is_animated; }
 

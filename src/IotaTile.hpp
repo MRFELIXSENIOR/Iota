@@ -4,9 +4,10 @@
 #include "IotaGameInstance.hpp"
 #include "IotaBasic.hpp"
 #include "IotaVector.hpp"
+#include "IotaDef.hpp"
 
 namespace iota {
-	class Tile : Instance, RenderSurface, Texture {
+	class IOTA_API Tile : Instance, RenderSurface, Texture {
 	public:
 		Tile(const std::string& texture_path, int x, int y, int width, int height);
 		Tile(const std::string& texture_path);

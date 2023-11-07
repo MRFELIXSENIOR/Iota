@@ -7,7 +7,6 @@
 #include <string>
 
 using namespace iota;
-using namespace Keyboard;
 
 static std::map<SDL_Scancode, KeyCode> kc_entries = {
 	{ SDL_SCANCODE_UNKNOWN, KeyCode::UnknownKey },
@@ -291,7 +290,7 @@ static std::map<KeyCode, std::string> ks_entries = {
 	{ KeyCode::Seven, "Seven" },
 	{ KeyCode::Eight, "Eight" },
 	{ KeyCode::Nine, "Nine" },
-	{ KeyCode::Zero, "Ten" },
+	{ KeyCode::Zero, "Zero" },
 	{ KeyCode::Return, "Return" },
 	{ KeyCode::Escape, "Escape" },
 	{ KeyCode::Backspace, "Backspace" },
@@ -501,52 +500,68 @@ static std::map<KeyCode, std::string> ks_entries = {
 	{ KeyCode::AudioFastForward, "AudioFastForward" }
 };
 
-static Event<KeyCode> keydown_event;
-static Event<KeyCode> keyup_event;
+static Event<KeyCode> keydown_event, keyup_event;
 
-ScriptSignal<KeyCode> Keyboard::GetKeydownEvent() { return ScriptSignal<KeyCode>(keydown_event); }
-ScriptSignal<KeyCode> Keyboard::GetKeyupEvent() { return ScriptSignal<KeyCode>(keyup_event); }
+static Event<Vector2<int>>
+mouse_motion_event,
+mouse_left_down_event,
+mouse_left_up_event,
+mouse_right_down_event,
+mouse_right_up_event
+//mouse_wheel_event
+;
 
-SDL_Scancode Keyboard::GetKey(KeyCode key) {
-	for (auto& k : kc_entries) {
-		if (k.second == key) {
-			return k.first;
+namespace iota {
+	namespace Keyboard {
+		ScriptSignal<KeyCode> OnKeyDown = ScriptSignal(keydown_event);
+		ScriptSignal<KeyCode> OnKeyUp = ScriptSignal(keyup_event);
+
+		const std::string& ToString(KeyCode keycode) { return ks_entries.at(keycode); }
+
+		SDL_Scancode ToScancode(KeyCode key) {
+			for (auto& k : kc_entries) {
+				if (k.second == key) {
+					return k.first;
+				}
+			}
+
+			return SDL_SCANCODE_UNKNOWN;
+		}
+
+		KeyCode ToKeyCode(SDL_Scancode scancode) {
+			return kc_entries.at(scancode);
+		}
+
+		bool IsKeyDown(KeyCode key) {
+			const uint8_t* key_states = SDL_GetKeyboardState(nullptr);
+			auto scancode = ToScancode(key);
+			if (key_states != nullptr && scancode != SDL_SCANCODE_UNKNOWN) {
+				if (key_states[scancode])
+					return true;
+			}
+
+			return false;
+		}
+
+		bool IsKeyReleased(KeyCode key) {
+			const uint8_t* key_states = SDL_GetKeyboardState(nullptr);
+			auto scancode = ToScancode(key);
+			if (key_states != nullptr && scancode != SDL_SCANCODE_UNKNOWN) {
+				if (!key_states[scancode])
+					return true;
+			}
+
+			return false;
 		}
 	}
 
-	return SDL_SCANCODE_UNKNOWN;
-}
+	namespace Mouse {
+		ScriptSignal<Vector2<int>> OnMove = ScriptSignal(mouse_motion_event);
 
-KeyCode Keyboard::GetKey(SDL_Scancode scancode) {
-	return kc_entries.at(scancode);
-}
+		ScriptSignal<Vector2<int>> OnLeftButtonDown = ScriptSignal(mouse_left_down_event);
+		ScriptSignal<Vector2<int>> OnLeftButtonUp = ScriptSignal(mouse_left_up_event);
 
-const std::map<SDL_Scancode, KeyCode>& Keyboard::GetKeyEntries() { return kc_entries; }
-const std::map<KeyCode, std::string>& Keyboard::GetKeystringEntries() { return ks_entries; }
-
-bool Keyboard::IsKeyDown(KeyCode key) {
-	const uint8_t* key_states = SDL_GetKeyboardState(nullptr);
-	auto scancode = GetKey(key);
-	if (key_states != nullptr && scancode != SDL_SCANCODE_UNKNOWN) {
-		if (key_states[scancode])
-			return true;
+		ScriptSignal<Vector2<int>> OnRightButtonDown = ScriptSignal(mouse_right_down_event);
+		ScriptSignal<Vector2<int>> OnRightButtonUp = ScriptSignal(mouse_right_up_event);
 	}
-
-	return false;
 }
-
-bool Keyboard::IsKeyReleased(KeyCode key) {
-	const uint8_t* key_states = SDL_GetKeyboardState(nullptr);
-	auto scancode = GetKey(key);
-	if (key_states != nullptr && scancode != SDL_SCANCODE_UNKNOWN) {
-		if (!key_states[scancode])
-			return true;
-	}
-
-	return false;
-}
-
-static Event<Vector2<int>> mouse_motion_event, mouse_down_event, mouse_up_event;
-ScriptSignal<Vector2<int>> Mouse::GetMouseMotionEvent() { return ScriptSignal<Vector2<int>>(mouse_motion_event); }
-ScriptSignal<Vector2<int>> Mouse::GetMouseDownEvent() { return ScriptSignal<Vector2<int>>(mouse_down_event); }
-ScriptSignal<Vector2<int>> Mouse::GetMouseUpEvent() { return ScriptSignal<Vector2<int>>(mouse_up_event); }

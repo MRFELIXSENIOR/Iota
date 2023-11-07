@@ -1,13 +1,13 @@
 #pragma once
 
 #include "IotaGameInstance.hpp"
+#include "IotaDef.hpp"
 
 #include <memory>
 
 namespace iota {
-	class Script : Instance {
+	class IOTA_API Script : Instance {
 	public:
-		using Instance::Instance;
 		Script();
 
 	protected:

@@ -8,7 +8,6 @@
 #include <SDL.h>
 
 #include "IotaVector.hpp"
-#include "IotaTexture.hpp"
 
 namespace iota {
 	class Texture;
@@ -25,12 +24,6 @@ namespace iota {
 	};
 
 	namespace Basic {
-		struct RenderData {
-		public:
-			bool fill;
-			Color color;
-		};
-
 		void Load();
 		void Render();
 		void Update(float delta_time);
@@ -55,22 +48,21 @@ namespace iota {
 		void SetDrawColor(const Color& color) const;
 
 		//Draw the texture to the screen
-		void DrawTexture(Texture& texture) const;
+		void DrawTexture(Texture& texture);
 
 		//Draw the texture to 'surface'
-		void DrawTexture(Texture& texture, const RenderSurface& surface) const;
+		void DrawTexture(Texture& texture, const RenderSurface& surface);
 
 		/*
 		Crop the texture with position and size from 'source'
 		And draw it to 'destination'
 		*/
-		void DrawTexture(Texture& texture, const RenderSurface& source, const RenderSurface& destination) const;
+		void DrawTexture(Texture& texture, const RenderSurface& source, const RenderSurface& destination);
 
-		void DrawRectangle(const RenderSurface& surface) const;
-		void DrawCircle(const RenderSurface& surface) const;
+		void DrawRectangle(const RenderSurface& surface, const Color& color, bool fill) const;
+		void DrawCircle(const RenderSurface& surface, const Color& color, bool fill) const;
 
 		static Window& GetCurrentWindow();
-		static Window& GetFocusedWindow();
 
 		int GetWidth() const;
 		int GetHeight() const;
@@ -85,6 +77,7 @@ namespace iota {
 		SDL_Rect rect;
 
 	public:
+		RenderSurface();
 		RenderSurface(int x, int y, int width, int height);
 
 		SDL_Rect& GetRectData();
@@ -95,7 +88,5 @@ namespace iota {
 
 		int& width;
 		int& height;
-
-		Basic::RenderData data;
 	};
 } // namespace iota

@@ -4,6 +4,7 @@
 #include "IotaBasic.hpp"
 #include "IotaException.hpp"
 #include "IotaProperty.hpp"
+#include "IotaDef.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -26,7 +27,7 @@ namespace iota {
 	template <typename T>
 	concept IsInstance = std::is_base_of_v<Instance, T>;
 
-	class ActorInterface {
+	class IOTA_API ActorInterface {
 	protected:
 		virtual void Load() = 0;
 		virtual void Render() = 0;
@@ -48,7 +49,7 @@ namespace iota {
 		friend void Basic::Update(float dt);
 	};
 
-	class Instance : ActorInterface {
+	class IOTA_API Instance : ActorInterface {
 	public:
 		using ActorInterface::ActorInterface;
 		Instance();
@@ -75,7 +76,7 @@ namespace iota {
 			Instance* c_new = static_cast<Instance*>(&child);
 			child_added.Fire(*c_new);
 
-			auto&& pair = std::make_pair(c_new->Name.Get(), c_new);
+			auto&& pair = std::make_pair(c_new->Name.Value, c_new);
 			children.insert(pair);
 
 			c_new->SetParent(*this);
@@ -98,7 +99,7 @@ namespace iota {
 
 		template <IsInstance T>
 		T& operator[](const std::string& name) {
-			return GetChildren(name);
+            return GetChildren<T>(name);
 		}
 
 		inline bool IsChildren() { return parent != nullptr; }
@@ -119,7 +120,7 @@ namespace iota {
 		virtual void Update(float dt);
 
 	private:
-		Instance* parent;
+		Instance* parent = nullptr;
 		std::unordered_map<std::string, Instance*> children;
 
 		Event<Instance&> parent_changed;

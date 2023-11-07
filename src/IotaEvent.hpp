@@ -5,7 +5,10 @@
 #include <concepts>
 #include <type_traits>
 
+#include "IotaDef.hpp"
+
 namespace iota {
+
 	namespace Basic {
 		void PollEvent();
 	}
@@ -15,8 +18,7 @@ namespace iota {
 		{ t(args...) };
 	};
 
-	template <typename... Args>
-	class Event {
+	template <typename... Args> class IOTA_API Event {
 	private:
 		sigslot::signal<Args...> sig;
 
@@ -26,26 +28,27 @@ namespace iota {
 		Event& operator=(const Event&) { return *this; }
 
 		template <typename Fn>
-		requires IsCallable<Fn, Args...>
-		void Connect(Fn&& fn) { sig.connect(fn); }
+			requires IsCallable<Fn, Args...>
+		void Connect(Fn&& fn) {
+			sig.connect(fn);
+		}
 
 		void Disconnect() { sig.disconnect_all(); }
 		void Fire(Args... args) { sig.operator()(std::forward<Args>(args)...); }
 	};
 
-	template <typename... Args>
-	class ScriptSignal : public Event<Args...> {
+	template <typename... Args> class IOTA_API ScriptSignal : public Event<Args...> {
 	public:
 		ScriptSignal(Event<Args...>& event_signal) : e(&event_signal) {}
 
 		template <typename Fn>
-		requires IsCallable<Fn, Args...>
+			requires IsCallable<Fn, Args...>
 		void Connect(Fn&& fn) {
 			e->Connect(fn);
 		}
 
 		void Disconnect() { e->Disconnect(); }
-		void Fire(Args... args) = delete;
+		void Fire(Args...) = delete;
 
 	private:
 		Event<Args...>* e;

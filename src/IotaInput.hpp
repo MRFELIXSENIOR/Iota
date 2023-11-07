@@ -257,28 +257,32 @@ namespace iota {
 	};
 	
 	//Key States
-	enum class KeyState{
+	enum class KeyState {
 		RELEASE,
 		DOWN,
 	};
-	
+
 	namespace Keyboard {
-		SDL_Scancode GetKey(KeyCode key);
-		KeyCode GetKey(SDL_Scancode scancode);
+		extern ScriptSignal<KeyCode> OnKeyDown;
+		inline auto test() { return OnKeyDown; }
+		extern ScriptSignal<KeyCode> OnKeyUp;
 
-		const std::map<SDL_Scancode, KeyCode>& GetKeyEntries();
-		const std::map<KeyCode, std::string>& GetKeystringEntries();
+		const std::string& ToString(KeyCode keycode);
 
-		ScriptSignal<KeyCode> GetKeydownEvent();
-		ScriptSignal<KeyCode> GetKeyupEvent();
+		SDL_Scancode ToScancode(KeyCode key);
+		KeyCode ToKeyCode(SDL_Scancode scancode);
 
 		bool IsKeyDown(KeyCode key);
 		bool IsKeyReleased(KeyCode key);
 	};
 
 	namespace Mouse {
-		ScriptSignal<Vector2<int>> GetMouseMotionEvent();
-		ScriptSignal<Vector2<int>> GetMouseDownEvent();
-		ScriptSignal<Vector2<int>> GetMouseUpEvent();
+		extern ScriptSignal<Vector2<int>> OnMove;
+
+		extern ScriptSignal<Vector2<int>> OnLeftButtonDown;
+		extern ScriptSignal<Vector2<int>> OnLeftButtonUp;
+
+		extern ScriptSignal<Vector2<int>> OnRightButtonDown;
+		extern ScriptSignal<Vector2<int>> OnRightButtonUp;
 	};
 };
